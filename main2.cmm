@@ -1,0 +1,121 @@
+#include "Cmm.h"
+
+section "data" {
+    enter_msg: bits8[] "enter number\n\0";
+}
+
+section "data" {
+    msgA: bits8[] "Above 50:\n\0";
+}
+
+section "data" {
+    msgB: bits8[] "Below 20:\n\0";
+}
+
+section "data" {
+    fmt: bits8[] "%d\0";
+}
+
+section "data" {
+    fmt_out: bits8[] "%d \0";
+}
+
+section "data" {
+    nl: bits8[] "\n\0";
+}
+
+section "bss" {
+    number_storage: bits32;
+}
+
+section "bss" {
+    A50: bits32[10];
+}
+
+section "bss" {
+    B20: bits32[10];
+}
+
+export main;
+export WinMain;
+
+WinMain() {
+    jump main [];
+}
+
+main() {
+    W_ i;
+    W_ countA;
+    W_ countB;
+
+    i = 0;
+    countA = 0;
+    countB = 0;
+
+read_loop:
+    if (i >= 10) goto printA;
+
+    foreign "C" puts(enter_msg "ptr");
+    foreign "C" scanf(fmt "ptr", number_storage "ptr");
+
+    W_ num;
+    num = I32[number_storage];
+
+    if (num > 50) goto storeA;
+    if (num < 20) goto storeB;
+
+next:
+    i = i + 1;
+    goto read_loop;
+
+storeA:
+    W_ offA;
+    offA = countA << 2;
+    I32[A50 + offA] = num;
+    countA = countA + 1;
+    goto next;
+
+storeB:
+    W_ offB;
+    offB = countB << 2;
+    I32[B20 + offB] = num;
+    countB = countB + 1;
+    goto next;
+
+printA:
+    foreign "C" puts(msgA "ptr");
+    i = 0;
+
+printA_loop:
+    if (i >= countA) goto printB;
+
+    W_ offPA;
+    W_ valA;
+    offPA = i << 2;
+    valA = I32[A50 + offPA];
+    foreign "C" printf(fmt_out "ptr", valA);
+
+    i = i + 1;
+    goto printA_loop;
+
+printB:
+    foreign "C" puts(nl "ptr");
+    foreign "C" puts(msgB "ptr");
+    i = 0;
+
+printB_loop:
+    if (i >= countB) goto end;
+
+    W_ offPB;
+    W_ valB;
+    offPB = i << 2;
+    valB = I32[B20 + offPB];
+    foreign "C" printf(fmt_out "ptr", valB);
+
+    i = i + 1;
+    goto printB_loop;
+
+end:
+    foreign "C" puts(nl "ptr");
+    return (0);
+}
