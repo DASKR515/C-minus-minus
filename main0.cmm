@@ -1,8 +1,6 @@
 #include "Cmm.h"
 
 
-import nain;
-
 section "data" {
   me_msg: bits8[] "Result: %d\n\0";
 }
