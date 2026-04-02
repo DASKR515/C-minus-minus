@@ -1,0 +1,7 @@
+#run library c + cmm 
+```bash
+gcc -c mylib.c -o mylib.o
+```
+```bash
+ghc -no-hs-main main.cmm mylib.o -o app
+```
