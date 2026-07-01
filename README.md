@@ -48,8 +48,7 @@ A minimalist, custom abstraction layer designed to wrap essential system calls a
 ---
 
 # Architectural Example
-
-[download-ghc]{https://www.haskell.org/ghc/}
+[Download GHC](https://www.haskell.org/ghc/)
 The following implementation demonstrates raw data section declaration and direct external routine invocation via the native C Calling Convention:
 
 ```C
