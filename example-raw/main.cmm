@@ -1,0 +1,11 @@
+#include "Cmm.h"
+
+section "data" {
+    msg: bits8[] "Hi Jordan\0";
+}
+
+export main;
+main() {
+    foreign "C" puts(msg "ptr");
+    return (0);
+}
