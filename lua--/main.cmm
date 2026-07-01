@@ -1,9 +1,0 @@
-#include "Cmm.h"
-
-export main;
-
-main() {
-    // Call the specific name we defined in main.c
-    foreign "C" run_lua_logic();
-    return (0);
-}
