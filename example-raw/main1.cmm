@@ -1,0 +1,51 @@
+#include "Cmm.h"
+
+section "data" {
+    enter_msg: bits8[] "enter number\n\0";
+}
+
+section "data" {
+    true_msg: bits8[] "true\n\0";
+}
+
+section "data" {
+    false_msg: bits8[] "false\n\0";
+}
+
+section "data" {
+    format: bits8[] "%d\0";
+}
+
+section "bss" {
+    number_storage: bits32;
+}
+
+export main;
+export WinMain;
+
+WinMain() {
+  jump main [];
+}
+
+main()
+{
+  foreign "C" puts(enter_msg "ptr");
+  foreign "C" scanf(format "ptr", number_storage "ptr");
+  
+  W_ num;
+  num = I32[number_storage];
+  
+  W_ sign_bit;
+  sign_bit = num & 2147483648;
+  
+  if (sign_bit != 0) goto negative;
+  if (num == 0) goto negative;
+  
+positive:
+  foreign "C" puts(true_msg "ptr");
+  return (0);
+  
+negative:
+  foreign "C" puts(false_msg "ptr");
+  return (0);
+}
