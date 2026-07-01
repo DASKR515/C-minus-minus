@@ -1,9 +1,0 @@
-// main.cmm
-#include "Cmm.h"
-
-export main;
-
-main() {
-    foreign "C" hello();
-    return (0);
-}
