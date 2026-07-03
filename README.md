@@ -42,7 +42,7 @@ Data structures are represented strictly as raw memory layouts. Structural hiera
 ### 2. Low-Level Control Flow
 Control paths and iteration loops are driven entirely by explicit branch instructions (`goto`). This maps directly to hardware jump operations (`JMP` in assembly), maximizing pipeline predictability and eliminating overhead.
 
-### 3. Structural Integration [stdc--.h]("https://github.com/DASKR515/stdc--.h")
+### 3. Structural Integration [stdc--.h](https://github.com/DASKR515/stdc--.h)
 This stdc--.h file is a wrapper for C libraries for C-- 
 ---
 
