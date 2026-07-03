@@ -95,7 +95,7 @@ This repository also references **stdc--.h**, a lightweight helper library that 
 
 Repository:
 
-https://github.com/DASKR515/stdc--.h
+https://github.com/DASKR515/stdc--.h/blob/main/stdc--.h
 
 Without **stdc--.h**:
 
@@ -188,7 +188,7 @@ Official GHC source repository.
 
 ## stdc--.h
 
-https://github.com/DASKR515/stdc--.h
+https://github.com/DASKR515/stdc--.h/blob/main/stdc--.h
 
 Lightweight helper library for C-- (Cmm).
 
