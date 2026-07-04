@@ -1,0 +1,40 @@
+#include "Cmm.h"
+#include "rCmmath.h"
+
+import "C" printf;
+import "C" exit;
+
+section "data" { fmt_bits: bits8[] "Number: %f -> Raw Bits: 0x%lx\n\0"; }
+section "data" { fmt_parts: bits8[] "Sign Bit: %ld, Exponent (Raw): 0x%lx\n\0"; }
+section "data" { fmt_inf: bits8[] "Is Inf_Val Infinite? %ld (1 = Yes, 0 = No)\n\0"; }
+
+section "data" { val_3_7: bits64 0x400d99999999999a; }
+section "data" { val_inf: bits64 0x7ff0000000000000; }
+
+export main;
+
+main() {
+    float64 num;
+    float64 inf_val;
+    bits64  raw_bits;
+    bits64  sign_bit;
+    bits64  exponent;
+    bits64  is_inf;
+
+    num = float64[val_3_7];
+    inf_val = float64[val_inf];
+
+    raw_bits = cmm_double_to_bits(num);
+
+    sign_bit = (raw_bits >> 63) & 1;
+    exponent = (raw_bits >> 52) & 0x7FF;
+
+    foreign "C" printf(fmt_bits "ptr", num, raw_bits);
+    foreign "C" printf(fmt_parts "ptr", sign_bit, exponent);
+
+    (is_inf) = foreign "C" isDoubleInfinite(inf_val);
+    
+    foreign "C" printf(fmt_inf "ptr", is_inf);
+
+    foreign "C" exit(0);
+}
