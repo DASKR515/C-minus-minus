@@ -1,0 +1,305 @@
+// this file test cmmath.h
+
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+
+
+section "data" { hdr: bits8[] "\n== constants ==\n\0"; }
+section "data" { lc1: bits8[] "mPI     = %f\n\0"; }
+section "data" { lc2: bits8[] "mE      = %f\n\0"; }
+section "data" { lc3: bits8[] "mSQRT2  = %f\n\0"; }
+
+section "data" { e_out:  bits64 [1]; }
+section "data" { ip_out: bits64 [1]; }
+
+
+section "data" { val_pi:    bits64 0x400921fb54442d18; }
+section "data" { val_e:     bits64 0x4005bf0a8b145769; }
+section "data" { val_sqrt2: bits64 0x3ff6a09e667f3bcd; }
+
+section "data" { k0:     bits64 0x0000000000000000; } // 0.0
+section "data" { k1:     bits64 0x3ff0000000000000; } // 1.0
+section "data" { k2:     bits64 0x4000000000000000; } // 2.0
+section "data" { k3:     bits64 0x4008000000000000; } // 3.0
+section "data" { k4:     bits64 0x4010000000000000; } // 4.0
+section "data" { k4_3:   bits64 0x4011333333333333; } // 4.3
+section "data" { k4_5:   bits64 0x4012000000000000; } // 4.5
+section "data" { k4_7:   bits64 0x4012cccccccccccd; } // 4.7
+section "data" { k5:     bits64 0x4014000000000000; } // 5.0
+section "data" { k5_5:   bits64 0xc016000000000000; } // -5.5
+section "data" { k7:     bits64 0x401c000000000000; } // 7.0
+section "data" { k8:     bits64 0x4020000000000000; } // 8.0
+section "data" { k9:     bits64 0x4022000000000000; } // 9.0
+section "data" { k10:    bits64 0x4024000000000000; } // 10.0
+section "data" { k27:    bits64 0x403b000000000000; } // 27.0
+section "data" { k3_75:  bits64 0x400e000000000000; } // 3.75
+section "data" { k1000:  bits64 0x408f400000000000; } // 1000.0
+section "data" { k2_718: bits64 0x4005bf0a8b145769; } // 2.718281828
+section "data" { kneg1:  bits64 0xbff0000000000000; } // -1.0
+
+section "data" { l01: bits8[] "msqrt(9.0)              = %f\n\0"; }
+section "data" { l02: bits8[] "mcbrt(27.0)             = %f\n\0"; }
+section "data" { l03: bits8[] "mpow(2.0, 10.0)         = %f\n\0"; }
+section "data" { l04: bits8[] "mexp(1.0)               = %f\n\0"; }
+section "data" { l05: bits8[] "mexp2(3.0)              = %f\n\0"; }
+section "data" { l06: bits8[] "mexpm1(1.0)             = %f\n\0"; }
+section "data" { l07: bits8[] "mlog(2.718281828)       = %f\n\0"; }
+section "data" { l08: bits8[] "mlog2(8.0)              = %f\n\0"; }
+section "data" { l09: bits8[] "mlog10(1000.0)          = %f\n\0"; }
+section "data" { l10: bits8[] "mlog1p(0.0)             = %f\n\0"; }
+section "data" { l11: bits8[] "mfabs(-5.5)             = %f\n\0"; }
+section "data" { l12: bits8[] "mfmod(10.0, 3.0)        = %f\n\0"; }
+section "data" { l13: bits8[] "mremainder(10.0, 3.0)   = %f\n\0"; }
+section "data" { l14: bits8[] "mfmax(3.0, 7.0)         = %f\n\0"; }
+section "data" { l15: bits8[] "mfmin(3.0, 7.0)         = %f\n\0"; }
+section "data" { l16: bits8[] "mfdim(7.0, 3.0)         = %f\n\0"; }
+section "data" { l17: bits8[] "mhypot(3.0, 4.0)        = %f\n\0"; }
+section "data" { l18: bits8[] "mceil(4.3)              = %f\n\0"; }
+section "data" { l19: bits8[] "mfloor(4.7)             = %f\n\0"; }
+section "data" { l20: bits8[] "mtrunc(4.7)             = %f\n\0"; }                                                                                                                    
+section "data" { l21: bits8[] "mround(4.5)             = %f\n\0"; }
+section "data" { l22: bits8[] "mlround(4.5)            = %ld\n\0"; }
+section "data" { l23: bits8[] "mllround(4.5)           = %lld\n\0"; }
+section "data" { l24: bits8[] "mrint(4.5)              = %f\n\0"; }
+section "data" { l25: bits8[] "mnearbyint(4.5)         = %f\n\0"; }
+section "data" { l26: bits8[] "mlrint(4.5)             = %ld\n\0"; }
+section "data" { l27: bits8[] "mllrint(4.5)            = %lld\n\0"; }
+section "data" { l28: bits8[] "mcopysign(3.0, -1.0)    = %f\n\0"; }
+section "data" { l29: bits8[] "mnan(empty)             = %f\n\0"; }
+section "data" { l30: bits8[] "msin(0.0)               = %f\n\0"; }
+section "data" { l31: bits8[] "mcos(0.0)               = %f\n\0"; }
+section "data" { l32: bits8[] "mtan(0.0)               = %f\n\0"; }
+section "data" { l33: bits8[] "masin(1.0)              = %f\n\0"; }
+section "data" { l34: bits8[] "macos(1.0)              = %f\n\0"; }
+section "data" { l35: bits8[] "matan(1.0)              = %f\n\0"; }
+section "data" { l36: bits8[] "matan2(1.0, 1.0)        = %f\n\0"; }
+section "data" { l37: bits8[] "msinh(0.0)              = %f\n\0"; }
+section "data" { l38: bits8[] "mcosh(0.0)              = %f\n\0"; }
+section "data" { l39: bits8[] "mtanh(0.0)              = %f\n\0"; }
+section "data" { l40: bits8[] "masinh(0.0)             = %f\n\0"; }
+section "data" { l41: bits8[] "macosh(1.0)             = %f\n\0"; }
+section "data" { l42: bits8[] "matanh(0.0)             = %f\n\0"; }
+section "data" { l43: bits8[] "mfrexp(8.0, &e)         = %f * 2^%d\n\0"; }
+section "data" { l44: bits8[] "mldexp(1.0, 3)           = %f\n\0"; }
+section "data" { l45: bits8[] "mmodf(3.75, &ip)        = frac %f, int %f\n\0"; }
+section "data" { l46: bits8[] "mscalbn(1.0, 4)         = %f\n\0"; }
+section "data" { l47: bits8[] "mscalbln(1.0, 4)        = %f\n\0"; }
+section "data" { l48: bits8[] "milogb(8.0)             = %d\n\0"; }
+section "data" { l49: bits8[] "mlogb(8.0)              = %f\n\0"; }
+section "data" { l50: bits8[] "mlgamma(5.0)            = %f\n\0"; }
+section "data" { l51: bits8[] "mtgamma(5.0)            = %f\n\0"; }
+section "data" { l52: bits8[] "merf(1.0)               = %f\n\0"; }
+section "data" { l53: bits8[] "merfc(1.0)              = %f\n\0"; }
+section "data" { nan_tag: bits8[] "\0"; }
+
+export main;
+
+main() {
+    float64 r;
+    float64 fx; 
+    float64 fy; 
+    W_ li;
+    bits32 ilg;
+
+
+    float64 v0, v1, v2, v3, v4, v4_3, v4_5, v4_7, v5, v5_5, v7, v8, v9, v10, v27, v1000, v2_718;
+    v0 = float64[k0];
+    v1 = float64[k1];
+    v2 = float64[k2];
+    v3 = float64[k3];
+    v4 = float64[k4];
+    v4_3 = float64[k4_3];
+    v4_5 = float64[k4_5];
+    v4_7 = float64[k4_7];
+    v5 = float64[k5];
+    v5_5 = float64[k5_5];
+    v7 = float64[k7];
+    v8 = float64[k8];
+    v9 = float64[k9];
+    v10 = float64[k10];
+    v27 = float64[k27];
+    v1000 = float64[k1000];
+    v2_718 = float64[k2_718];
+
+    (r) = foreign "C" sqrt(v9);
+    moutf(l01 "ptr", r);
+
+    (r) = foreign "C" cbrt(v27);
+    moutf(l02 "ptr", r);
+
+    (r) = foreign "C" pow(v2, v10);
+    moutf(l03 "ptr", r);
+
+    (r) = foreign "C" exp(v1);
+    moutf(l04 "ptr", r);
+
+    (r) = foreign "C" exp2(v3);
+    moutf(l05 "ptr", r);
+
+    (r) = foreign "C" expm1(v1);
+    moutf(l06 "ptr", r);
+
+    (r) = foreign "C" log(v2_718);
+    moutf(l07 "ptr", r);
+
+    (r) = foreign "C" log2(v8);
+    moutf(l08 "ptr", r);
+
+    (r) = foreign "C" log10(v1000);
+    moutf(l09 "ptr", r);
+
+    (r) = foreign "C" log1p(v0);
+    moutf(l10 "ptr", r);
+
+    (r) = foreign "C" fabs(v5_5);
+    moutf(l11 "ptr", r);
+
+    (r) = foreign "C" fmod(v10, v3);
+    moutf(l12 "ptr", r);
+
+    (r) = foreign "C" remainder(v10, v3);
+    moutf(l13 "ptr", r);
+
+    (r) = foreign "C" fmax(v3, v7);
+    moutf(l14 "ptr", r);
+
+    (r) = foreign "C" fmin(v3, v7);
+    moutf(l15 "ptr", r);
+
+    (r) = foreign "C" fdim(v7, v3);
+    moutf(l16 "ptr", r);
+
+    (r) = foreign "C" hypot(v3, v4);
+    moutf(l17 "ptr", r);
+
+    (r) = foreign "C" ceil(v4_3);
+    moutf(l18 "ptr", r);
+
+    (r) = foreign "C" floor(v4_7);
+    moutf(l19 "ptr", r);
+
+    (r) = foreign "C" trunc(v4_7);
+    moutf(l20 "ptr", r);
+
+    (r) = foreign "C" round(v4_5);
+    moutf(l21 "ptr", r);
+
+    fx = v4_5;
+    (li) = foreign "C" lround(fx);
+    moutf(l22 "ptr", li);
+
+    (li) = foreign "C" llround(fx);
+    moutf(l23 "ptr", li);
+
+    (r) = foreign "C" rint(fx);
+    moutf(l24 "ptr", r);
+
+    (r) = foreign "C" nearbyint(fx);
+    moutf(l25 "ptr", r);
+
+    (li) = foreign "C" lrint(fx);
+    moutf(l26 "ptr", li);
+
+    (li) = foreign "C" llrint(fx);
+    moutf(l27 "ptr", li);
+
+    fy = float64[kneg1];
+    (r) = foreign "C" copysign(v3, fy);
+    moutf(l28 "ptr", r);
+
+    (r) = foreign "C" nan(nan_tag "ptr");
+    moutf(l29 "ptr", r);
+
+    (r) = foreign "C" sin(v0);
+    moutf(l30 "ptr", r);
+
+    (r) = foreign "C" cos(v0);
+    moutf(l31 "ptr", r);
+
+    (r) = foreign "C" tan(v0);
+    moutf(l32 "ptr", r);
+
+    (r) = foreign "C" asin(v1);
+    moutf(l33 "ptr", r);
+
+    (r) = foreign "C" acos(v1);
+    moutf(l34 "ptr", r);
+
+    (r) = foreign "C" atan(v1);
+    moutf(l35 "ptr", r);
+
+    (r) = foreign "C" atan2(v1, v1);
+    moutf(l36 "ptr", r);
+
+    (r) = foreign "C" sinh(v0);
+    moutf(l37 "ptr", r);
+
+    (r) = foreign "C" cosh(v0);
+    moutf(l38 "ptr", r);
+
+    (r) = foreign "C" tanh(v0);
+    moutf(l39 "ptr", r);
+
+    (r) = foreign "C" asinh(v0);
+    moutf(l40 "ptr", r);
+
+    (r) = foreign "C" acosh(v1);
+    moutf(l41 "ptr", r);
+
+    (r) = foreign "C" atanh(v0);
+    moutf(l42 "ptr", r);
+
+    W_ ptr_e;
+    ptr_e = e_out;
+    (r) = foreign "C" frexp(v8, ptr_e);
+    ilg = bits32[ptr_e]; 
+    moutf(l43 "ptr", r, ilg);
+
+    (r) = foreign "C" ldexp(v1, 3);
+    moutf(l44 "ptr", r);
+
+    W_ ptr_ip;
+    ptr_ip = ip_out;
+    fy = float64[k3_75];
+    (r) = foreign "C" modf(fy, ptr_ip);
+    fy = float64[ptr_ip];
+    moutf(l45 "ptr", r, fy);
+
+    (r) = foreign "C" scalbn(v1, 4);
+    moutf(l46 "ptr", r);
+
+    (r) = foreign "C" scalbln(v1, 4);
+    moutf(l47 "ptr", r);
+
+    (ilg) = foreign "C" ilogb(v8);
+    moutf(l48 "ptr", ilg);
+
+    (r) = foreign "C" logb(v8);
+    moutf(l49 "ptr", r);
+
+    (r) = foreign "C" lgamma(v5);
+    moutf(l50 "ptr", r);
+
+    (r) = foreign "C" tgamma(v5);
+    moutf(l51 "ptr", r);
+
+    (r) = foreign "C" erf(v1);
+    moutf(l52 "ptr", r);
+
+    (r) = foreign "C" erfc(v1);
+    moutf(l53 "ptr", r);
+
+    mout(hdr "ptr");
+
+    r = float64[val_pi];
+    moutf(lc1 "ptr", r);
+
+    r = float64[val_e];
+    moutf(lc2 "ptr", r);
+
+    r = float64[val_sqrt2];
+    moutf(lc3 "ptr", r);
+
+    return (0);
+}
