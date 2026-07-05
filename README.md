@@ -120,7 +120,7 @@ cc main.o -o app -lm -lc                  # link with a plain system linker
 
 Because a plain C linker has no notion of the Haskell RTS, it only pulls in what the object file actually references. Same program, same behavior, none of the extra weight.
 
-This is exactly what the **[gmm](#)** tool below automates.
+This is exactly what the **[gmm](https://github.com/DASKR515/C-minus-minus/releases/download/cmm/gmm)** tool below automates.
 
 ---
 
