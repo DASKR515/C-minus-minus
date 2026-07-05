@@ -158,8 +158,7 @@ Cmm's calling conventions were designed around GHC's STG execution model, which 
 This repository also references **stdc--.h**, a lightweight helper library that simplifies writing C-- (Cmm) programs while remaining fully compatible with the native C ABI.
 
 Repository:
-
-https://github.com/DASKR515/stdc--.h/blob/main/stdc--.h
+https://github.com/DASKR515/C-minus-minus/tree/main/stdc--.h
 
 Without **stdc--.h**:
 
