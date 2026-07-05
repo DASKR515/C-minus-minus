@@ -1,0 +1,388 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+section "data" { enter_msg: bits8[] "enter number\n\0"; }
+section "data" { msgA: bits8[] "Above 50:\n\0"; }
+section "data" { msgB: bits8[] "Below 20:\n\0"; }
+section "data" { fmt: bits8[] "%d\0"; }
+section "data" { fmt_out: bits8[] "%d \0"; }
+section "data" { nl: bits8[] "\n\0"; }
+
+section "data" { str_hello: bits8[] "Hello Cmm World\0"; }
+section "data" { str_extra: bits8[] " + Extra\0"; }
+section "data" { str_tokens: bits8[] "one two three\0"; }
+section "data" { delim_space: bits8[] " \0"; }
+
+section "data" { path_txt: bits8[] "cmm_test.txt\0"; }
+section "data" { mode_w: bits8[] "w+\0"; }
+section "data" { mode_r: bits8[] "r\0"; }
+
+section "data" { env_name: bits8[] "PATH\0"; }
+section "data" { env_name2: bits8[] "CMM_VAR=cmm_value\0"; }
+section "data" { env_val: bits8[] "cmm_value\0"; }
+section "data" { cmd_echo: bits8[] "echo cmm-system-call\0"; }
+
+section "data" { num_str: bits8[] "12345\0"; }
+section "data" { float_str: bits8[] "3.14159\0"; }
+
+section "data" { fmt_time: bits8[] "%d-%d-%d\n\0"; }
+section "data" { fmt_s: bits8[] "%s\n\0"; }
+
+section "data" { assert_msg: bits8[] "num > 0\0"; }
+section "data" { assert_file: bits8[] "main.cmm\0"; }
+
+section "bss" { number_storage: bits32; }
+section "bss" { A50: bits32[10]; }
+section "bss" { B20: bits32[10]; }
+
+section "bss" { buf1: bits8[64]; }
+section "bss" { buf2: bits8[64]; }
+section "bss" { tokbuf: bits8[64]; }
+section "bss" { sprintfbuf: bits8[64]; }
+section "bss" { fgetsbuf: bits8[64]; }
+section "bss" { tmpnambuf: bits8[64]; }
+
+section "bss" { endptr_l: bits32; }
+section "bss" { timeval: bits32; }
+
+export main;
+export WinMain;
+
+WinMain() { jump main []; }
+
+main() {
+    W_ i;
+    W_ countA;
+    W_ countB;
+    W_ num;
+
+    i = 0;
+    countA = 0;
+    countB = 0;
+
+read_loop:
+    if (i >= 10) goto printA;
+
+    mout(enter_msg "ptr");
+    min(fmt "ptr", number_storage "ptr");
+
+    num = I32[number_storage];
+
+    if (num > 50) goto storeA;
+    if (num < 20) goto storeB;
+
+next:
+    i = i + 1;
+    goto read_loop;
+
+storeA:
+    W_ offA;
+    offA = countA << 2;
+    I32[A50 + offA] = num;
+    countA = countA + 1;
+    goto next;
+
+storeB:
+    W_ offB;
+    offB = countB << 2;
+    I32[B20 + offB] = num;
+    countB = countB + 1;
+    goto next;
+
+printA:
+    mout(msgA "ptr");
+    i = 0;
+
+printA_loop:
+    if (i >= countA) goto printB;
+
+    W_ offPA;
+    W_ valA;
+    offPA = i << 2;
+    valA = I32[A50 + offPA];
+    moutf(fmt_out "ptr", valA);
+
+    i = i + 1;
+    goto printA_loop;
+
+printB:
+    mout(nl "ptr");
+    mout(msgB "ptr");
+    i = 0;
+
+printB_loop:
+    if (i >= countB) goto stdio_extra;
+
+    W_ offPB;
+    W_ valB;
+    offPB = i << 2;
+    valB = I32[B20 + offPB];
+    moutf(fmt_out "ptr", valB);
+
+    i = i + 1;
+    goto printB_loop;
+
+stdio_extra:
+    mout(nl "ptr");
+    mout("=== stdio extra ===");
+
+    moutc(88);
+    smoutf(sprintfbuf "ptr", fmt_s "ptr", str_hello "ptr");
+    mout(sprintfbuf "ptr");
+    snmoutf(sprintfbuf "ptr", 10, fmt_s "ptr", str_hello "ptr");
+    mout(sprintfbuf "ptr");
+
+    W_ c;
+    W_ win_stdin;
+    (c) = minc();
+    (win_stdin) = mget_stdin();
+    mungetc(c, win_stdin);
+
+    W_ filevar;
+    (filevar) = mopen(path_txt "ptr", mode_w "ptr");
+    fmout(filevar, str_hello "ptr");
+    fmoutc(33, filevar);
+    fmoutf(filevar, fmt_s "ptr", str_extra "ptr");
+    mwrite(str_hello "ptr", 1, 5, filevar);
+    mflush(filevar);
+    mseek(filevar, 0, 0);
+    W_ pos;
+    (pos) = mtell(filevar);
+    mrewind(filevar);
+    mclose(filevar);
+
+    (filevar) = mopen(path_txt "ptr", mode_r "ptr");
+    fmin(fgetsbuf "ptr", 64, filevar);
+    mout(fgetsbuf "ptr");
+    fminc(filevar);
+    fminf(filevar, fmt_s "ptr", buf1 "ptr");
+    sminf(fgetsbuf "ptr", fmt_s "ptr", buf2 "ptr");
+
+    W_ __t1;
+    (__t1) = meof(filevar);
+    if (__t1 != 0) { }
+    W_ __t2;
+    (__t2) = merror(filevar);
+    if (__t2 != 0) { }
+    mclearerr(filevar);
+    msetbuf(filevar, buf1 "ptr");
+    msetvbuf(filevar, buf2 "ptr", 0, 64);
+    mclose(filevar);
+
+    (filevar) = mopen(path_txt "ptr", mode_r "ptr");
+    (filevar) = mreopen(path_txt "ptr", mode_w "ptr", filevar);
+    mclose(filevar);
+
+    mrename(path_txt "ptr", path_txt "ptr");
+    mremove(path_txt "ptr");
+
+    (filevar) = mtmpfile();
+    mclose(filevar);
+    mtmpname(tmpnambuf "ptr");
+
+    mperror(str_hello "ptr");
+
+    mout("=== stdlib ===");
+
+    W_ p;
+    (p) = mnew(64);
+    mfree(p);
+    (p) = mnewz(4, 16);
+    (p) = mresize(p, 128);
+    mfree(p);
+
+    (num) = mtoi(num_str "ptr");
+    W_ nlong;
+    (nlong) = mtol(num_str "ptr");
+    W_ nll;
+    (nll) = mtoll(num_str "ptr");
+    W_ nf;
+    (nf) = mtof(float_str "ptr");
+
+    W_ sl;
+    (sl) = mstrtol(num_str "ptr", endptr_l "ptr", 10);
+    W_ sul;
+    (sul) = mstrtoul(num_str "ptr", endptr_l "ptr", 10);
+    W_ sll;
+    (sll) = mstrtoll(num_str "ptr", endptr_l "ptr", 10);
+    W_ sull;
+    (sull) = mstrtoull(num_str "ptr", endptr_l "ptr", 10);
+    W_ sf;
+    (sf) = mstrtof(float_str "ptr", endptr_l "ptr");
+    W_ sd;
+    (sd) = mstrtod(float_str "ptr", endptr_l "ptr");
+    W_ sld;
+    (sld) = mstrtold(float_str "ptr", endptr_l "ptr");
+
+    msrand(1234);
+    W_ rv;
+    (rv) = mrand();
+    moutf(fmt "ptr", rv);
+
+    W_ av;
+    (av) = mabs(-15);
+    (av) = mlabs(-15);
+    (av) = mllabs(-15);
+
+    W_ envp;
+    (envp) = mgetenv(env_name "ptr");
+    msetenv(env_name2 "ptr", env_val "ptr", 1);
+    mputenv(env_name2 "ptr");
+    munsetenv(env_name2 "ptr");
+
+    msystem(cmd_echo "ptr");
+
+    mout("=== string ===");
+
+    mstrcpy(buf1 "ptr", str_hello "ptr");
+    mout(buf1 "ptr");
+    mstrncpy(buf2 "ptr", str_hello "ptr", 5);
+    mmemcpy(buf2 "ptr", str_hello "ptr", 5);
+    mmemmove(buf2 "ptr", buf1 "ptr", 5);
+
+    mstrcat(buf1 "ptr", str_extra "ptr");
+    mout(buf1 "ptr");
+    mstrncat(buf1 "ptr", str_extra "ptr", 3);
+
+    W_ cmp;
+    (cmp) = mstrcmp(str_hello "ptr", str_extra "ptr");
+    (cmp) = mstrncmp(str_hello "ptr", str_extra "ptr", 3);
+    (cmp) = mmemcmp(str_hello "ptr", str_extra "ptr", 3);
+    (cmp) = mstrcoll(str_hello "ptr", str_extra "ptr");
+    mstrxfrm(buf2 "ptr", str_hello "ptr", 64);
+
+    W_ found;
+    (found) = mstrchr(str_hello "ptr", 87);
+    (found) = mstrrchr(str_hello "ptr", 111);
+    (found) = mstrstr(str_hello "ptr", str_extra "ptr");
+    (found) = mstrpbrk(str_hello "ptr", delim_space "ptr");
+    W_ spn;
+    (spn) = mstrspn(str_hello "ptr", str_hello "ptr");
+    (spn) = mstrcspn(str_hello "ptr", delim_space "ptr");
+    (found) = mmemchr(str_hello "ptr", 67, 20);
+
+    mstrcpy(tokbuf "ptr", str_tokens "ptr");
+    W_ tok;
+    (tok) = mstrtok(tokbuf "ptr", delim_space "ptr");
+    mout(tok "ptr");
+
+    W_ slen;
+    (slen) = mstrlen(str_hello "ptr");
+    moutf(fmt "ptr", slen);
+
+    W_ errp;
+    (errp) = mstrerror(2);
+    mout(errp "ptr");
+
+    mmemset(buf2 "ptr", 0, 64);
+    W_ dupp;
+    (dupp) = mstrdup(str_hello "ptr");
+    mfree(dupp);
+
+    mout("=== ctype ===");
+    W_ __t3;
+    (__t3) = misalpha(65);
+    if (__t3 != 0) { }
+    W_ __t4;
+    (__t4) = misdigit(53);
+    if (__t4 != 0) { }
+    W_ __t5;
+    (__t5) = misalnum(57);
+    if (__t5 != 0) { }
+    W_ __t6;
+    (__t6) = misspace(32);
+    if (__t6 != 0) { }
+    W_ __t7;
+    (__t7) = mispunct(46);
+    if (__t7 != 0) { }
+    W_ __t8;
+    (__t8) = misupper(65);
+    if (__t8 != 0) { }
+    W_ __t9;
+    (__t9) = mislower(97);
+    if (__t9 != 0) { }
+    W_ __t10;
+    (__t10) = miscntrl(9);
+    if (__t10 != 0) { }
+    W_ __t11;
+    (__t11) = misprint(97);
+    if (__t11 != 0) { }
+    W_ __t12;
+    (__t12) = misgraph(97);
+    if (__t12 != 0) { }
+    W_ __t13;
+    (__t13) = misblank(32);
+    if (__t13 != 0) { }
+    W_ __t14;
+    (__t14) = misxdigit(70);
+    if (__t14 != 0) { }
+    W_ __up1;
+    (__up1) = mtoupper(122);
+    moutc(__up1);
+    W_ __lo1;
+    (__lo1) = mtolower(90);
+    moutc(__lo1);
+    mout(nl "ptr");
+
+    mout("=== time ===");
+    W_ tval;
+    (tval) = mtime(0);
+    I32[timeval] = tval;
+    W_ clk;
+    (clk) = mclock();
+
+    W_ tmptr;
+    (tmptr) = mlocaltime(timeval "ptr");
+    W_ tmptr2;
+    (tmptr2) = mgmtime(timeval "ptr");
+
+    W_ dt;
+    (dt) = mdifftime(I32[timeval], 0);
+
+    W_ mkt;
+    (mkt) = mmktime(tmptr);
+
+    W_ ascp;
+    (ascp) = masctime(tmptr);
+    mout(ascp "ptr");
+
+    W_ ctp;
+    (ctp) = mctime(timeval "ptr");
+    mout(ctp "ptr");
+
+    mstrftime(buf1 "ptr", 64, fmt_time "ptr", tmptr);
+    mout(buf1 "ptr");
+
+    mout("=== inttypes ===");
+    W_ imx;
+    (imx) = mimaxabs(-99);
+    W_ imstr;
+    (imstr) = mstrtoimax(num_str "ptr", endptr_l "ptr", 10);
+    W_ umstr;
+    (umstr) = mstrtoumax(num_str "ptr", endptr_l "ptr", 10);
+
+    mout("=== locale ===");
+    W_ lcv;
+    (lcv) = mlocaleconv();
+
+    mout("=== fenv ===");
+    mfeclearexcept(0);
+    W_ fte;
+    (fte) = mfetestexcept(0);
+    W_ frnd;
+    (frnd) = mfegetround();
+    mfesetround(0);
+    mferaiseexcept(0);
+
+    mout("=== assert ===");
+    mcheck(num > 0);
+    if (num > 0) goto assert_ok;
+    massert(assert_msg "ptr", assert_file "ptr", 250);
+
+assert_ok:
+    mout("assert passed");
+
+end:
+    mout(nl "ptr");
+    mexit(0);
+}
