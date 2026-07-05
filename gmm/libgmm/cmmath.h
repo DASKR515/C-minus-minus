@@ -5,6 +5,7 @@
               --    ver <1.0.0>
 */
 
+/*
 #pragma once
 #include "Cmm.h"
 
@@ -87,3 +88,4 @@
 #define mPI_HEX      0x400921fb54442d18
 #define mE_HEX       0x4005bf0a8b145769
 #define mSQRT2_HEX   0x403f6a09e667f3bcd
+*/
