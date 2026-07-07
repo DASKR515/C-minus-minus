@@ -4,88 +4,108 @@
               --    Names follow the 'm' prefix convention to keep your FFI boilerplate clean.
               --    ver <1.0.0>
 */
-
-/*
 #pragma once
 #include "Cmm.h"
 
-#define mcos(x)                (r) = foreign "C" cos(x)
-#define msin(x)                (r) = foreign "C" sin(x)
-#define mtan(x)                (r) = foreign "C" tan(x)
-#define macos(x)               (r) = foreign "C" acos(x)
-#define masin(x)               (r) = foreign "C" asin(x)
-#define matan(x)               (r) = foreign "C" atan(x)
-#define matan2(y, x)           (r) = foreign "C" atan2(y, x)
+/* Basic arithmetic */
+#define madd(result,a,b) foreign "C" madd(result,a,b)
+#define msub(result,a,b) foreign "C" msub(result,a,b)
+#define mmul(result,a,b) foreign "C" mmul(result,a,b)
+#define mfdiv(result,a,b) foreign "C" mdiv(result,a,b)
 
-#define mcosh(x)               (r) = foreign "C" cosh(x)
-#define msinh(x)               (r) = foreign "C" sinh(x)
-#define mtanh(x)               (r) = foreign "C" tanh(x)
-#define macosh(x)              (r) = foreign "C" acosh(x)
-#define masinh(x)              (r) = foreign "C" asinh(x)
-#define matanh(x)              (r) = foreign "C" atanh(x)
+/* Trigonometric */
+#define msin(result,a) foreign "C" msin(result,a)
+#define mcos(result,a) foreign "C" mcos(result,a)
+#define mtan(result,a) foreign "C" mtan(result,a)
+#define masin(result,a) foreign "C" masin(result,a)
+#define macos(result,a) foreign "C" macos(result,a)
+#define matan(result,a) foreign "C" matan(result,a)
+#define matan2(result,a,b) foreign "C" matan2(result,a,b)
 
-#define mexp(x)                (r) = foreign "C" exp(x)
-#define mexp2(x)               (r) = foreign "C" exp2(x)
-#define mexpm1(x)              (r) = foreign "C" expm1(x)
-#define mlog(x)                (r) = foreign "C" log(x)
-#define mlog10(x)              (r) = foreign "C" log10(x)
-#define mlog2(x)               (r) = foreign "C" log2(x)
-#define mlog1p(x)              (r) = foreign "C" log1p(x)
-#define mlogb(x)               (r) = foreign "C" logb(x)
+/* Hyperbolic */
+#define msinh(result,a) foreign "C" msinh(result,a)
+#define mcosh(result,a) foreign "C" mcosh(result,a)
+#define mtanh(result,a) foreign "C" mtanh(result,a)
+#define masinh(result,a) foreign "C" masinh(result,a)
+#define macosh(result,a) foreign "C" macosh(result,a)
+#define matanh(result,a) foreign "C" matanh(result,a)
 
-#define milogb(x)              (ilg) = foreign "C" ilogb(x)
-#define mlround(x)             (li) = foreign "C" lround(x)
-#define mllround(x)            (li) = foreign "C" llround(x)
-#define mlrint(x)              (li) = foreign "C" lrint(x)
-#define mllrint(x)             (li) = foreign "C" llrint(x)
+/* Exponential */
+#define mexp(result,a) foreign "C" mexp(result,a)
+#define mexp2(result,a) foreign "C" mexp2(result,a)
+#define mexpm1(result,a) foreign "C" mexpm1(result,a)
 
-#define mmodf(x, iptr)         (r) = foreign "C" modf(x, iptr)
-#define mfrexp(x, exp)         (r) = foreign "C" frexp(x, exp)
-#define mldexp(x, exp)         (r) = foreign "C" ldexp(x, exp)
-#define mscalbn(x, exp)        (r) = foreign "C" scalbn(x, exp)
-#define mscalbln(x, exp)       (r) = foreign "C" scalbln(x, exp)
+/* Logarithmic */
+#define mlog(result,a) foreign "C" mlog(result,a)
+#define mlog10(result,a) foreign "C" mlog10(result,a)
+#define mlog2(result,a) foreign "C" mlog2(result,a)
+#define mlog1p(result,a) foreign "C" mlog1p(result,a)
+#define mlogb(result,a) foreign "C" mlogb(result,a)
+#define milogb(result,a) foreign "C" milogb(result,a)
 
-#define msqrt(r, x)            (r) = foreign "C" sqrt(x)
-#define mcbrt(r, x)            (r) = foreign "C" cbrt(x)
-#define mpow(r, base, exp)     (r) = foreign "C" pow(base, exp)
+/* Power */
+#define mpow(result,a,b) foreign "C" mpow(result,a,b)
+#define msqrt(result,a) foreign "C" msqrt(result,a)
+#define mcbrt(result,a) foreign "C" mcbrt(result,a)
+#define mhypot(result,a,b) foreign "C" mhypot(result,a,b)
 
-#define mhypot(x, y)           (r) = foreign "C" hypot(x, y)
-#define mfabs(x)               (r) = foreign "C" fabs(x)
+/* Gamma */
+#define mtgamma(result,a) foreign "C" mtgamma(result,a)
+#define mlgamma(result,a) foreign "C" mlgamma(result,a)
 
-#define mceil(x)               (r) = foreign "C" ceil(x)
-#define mfloor(x)              (r) = foreign "C" floor(x)
-#define mtrunc(x)              (r) = foreign "C" trunc(x)
-#define mround(x)              (r) = foreign "C" round(x)
-#define mrint(x)               (r) = foreign "C" rint(x)
-#define mnearbyint(x)          (r) = foreign "C" nearbyint(x)
+/* Error */
+#define merf(result,a) foreign "C" merf(result,a)
+#define merfc(result,a) foreign "C" merfc(result,a)
 
-#define mfmod(numer, denom)    (r) = foreign "C" fmod(numer, denom)
-#define mremainder(x, y)       (r) = foreign "C" remainder(x, y)
-#define mremquo(x, y, quo)     (r) = foreign "C" remquo(x, y, quo)
+/* Absolute */
+#define mfabs(result,a) foreign "C" mfabs(result,a)
+#define mcopysign(result,a,b) foreign "C" mcopysign(result,a,b)
 
-#define mcopysign(x, y)        (r) = foreign "C" copysign(x, y)
-#define mnan(tagp)             (r) = foreign "C" nan(tagp)
-#define mnextafter(x, y)       (r) = foreign "C" nextafter(x, y)
-#define mnexttoward(x, y)      (r) = foreign "C" nexttoward(x, y)
+/* Remainder */
+#define mfmod(result,a,b) foreign "C" mfmod(result,a,b)
+#define mremainder(result,a,b) foreign "C" mremainder(result,a,b)
+#define mremquo(result,quo,a,b) foreign "C" mremquo(result,quo,a,b)
 
-#define mfdim(x, y)            (r) = foreign "C" fdim(x, y)
-#define mfmax(x, y)            (r) = foreign "C" fmax(x, y)
-#define mfmin(x, y)            (r) = foreign "C" fmin(x, y)
+/* Maximum minimum */
+#define mfmax(result,a,b) foreign "C" mfmax(result,a,b)
+#define mfmin(result,a,b) foreign "C" mfmin(result,a,b)
+#define mfdim(result,a,b) foreign "C" mfdim(result,a,b)
 
-#define mfpclassify(x)         foreign "C" fpclassify(x)
-#define misfinite(x)           foreign "C" isfinite(x)
-#define misinf(x)              foreign "C" isinf(x)
-#define misnan(x)              foreign "C" isnan(x)
-#define mnormal(x)             foreign "C" isnormal(x)
-#define msignbit(x)            foreign "C" signbit(x)
+/* Floating decomposition */
+#define mfrexp(result,exp,a) foreign "C" mfrexp(result,exp,a)
+#define mmodf(frac,integer,a) foreign "C" mmodf(frac,integer,a)
+#define mldexp(result,a,n) foreign "C" mldexp(result,a,n)
+#define mscalbn(result,a,n) foreign "C" mscalbn(result,a,n)
+#define mscalbln(result,a,n) foreign "C" mscalbln(result,a,n)
 
-#define merf(x)                (r) = foreign "C" erf(x)
-#define merfc(x)               (r) = foreign "C" erfc(x)
-#define mtgamma(x)             (r) = foreign "C" tgamma(x)
-#define mlgamma(x)             (r) = foreign "C" lgamma(x)
+/* Floating environment helpers */
+#define mnextafter(result,a,b) foreign "C" mnextafter(result,a,b)
+#define mnexttoward(result,a,b) foreign "C" mnexttoward(result,a,b)
+#define mfma(result,a,b,c) foreign "C" mfma(result,a,b,c)
+#define mnan(result,a) foreign "C" mnan(result,a)
 
+/* Rounding */
+#define mceil(result,a) foreign "C" mceil(result,a)
+#define mfloor(result,a) foreign "C" mfloor(result,a)
+#define mtrunc(result,a) foreign "C" mtrunc(result,a)
+#define mround(result,a) foreign "C" mround(result,a)
+#define mlround(result,a) foreign "C" mlround(result,a)
+#define mllround(result,a) foreign "C" mllround(result,a)
+#define mrint(result,a) foreign "C" mrint(result,a)
+#define mlrint(result,a) foreign "C" mlrint(result,a)
+#define mllrint(result,a) foreign "C" mllrint(result,a)
+#define mnearbyint(result,a) foreign "C" mnearbyint(result,a)
 
-#define mPI_HEX      0x400921fb54442d18
-#define mE_HEX       0x4005bf0a8b145769
-#define mSQRT2_HEX   0x403f6a09e667f3bcd
-*/
+/* Classification wrappers */
+#define mfpclassify(result,a) foreign "C" mfpclassify(result,a)
+#define misfinite(result,a) foreign "C" misfinite(result,a)
+#define misinf(result,a) foreign "C" misinf(result,a)
+#define misnan(result,a) foreign "C" misnan(result,a)
+#define misnormal(result,a) foreign "C" misnormal(result,a)
+#define msignbit(result,a) foreign "C" msignbit(result,a)
+#define misgreater(result,a,b) foreign "C" misgreater(result,a,b)
+#define misgreaterequal(result,a,b) foreign "C" misgreaterequal(result,a,b)
+#define misless(result,a,b) foreign "C" misless(result,a,b)
+#define mislessequal(result,a,b) foreign "C" mislessequal(result,a,b)
+#define mislessgreater(result,a,b) foreign "C" mislessgreater(result,a,b)
+#define misunordered(result,a,b) foreign "C" misunordered(result,a,b)
