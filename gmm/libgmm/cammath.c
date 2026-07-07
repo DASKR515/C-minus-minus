@@ -1,106 +1,564 @@
-// test math C lib
-#pragma once
-#include "Cmm.h"
+/*
+This module avoids all direct float64 arithmetic in Cmm due to a confirmed
+GHC Native Code Generator code generation bug.
 
-/* Basic arithmetic */
-#define madd(result,a,b) foreign "C" madd(result,a,b)
-#define msub(result,a,b) foreign "C" msub(result,a,b)
-#define mmul(result,a,b) foreign "C" mmul(result,a,b)
-#define mfdiv(result,a,b) foreign "C" mdiv(result,a,b)
+The NCG incorrectly emits addq for XMM registers when floating-point
+operations are written directly in Cmm.
 
-/* Trigonometric */
-#define msin(result,a) foreign "C" msin(result,a)
-#define mcos(result,a) foreign "C" mcos(result,a)
-#define mtan(result,a) foreign "C" mtan(result,a)
-#define masin(result,a) foreign "C" masin(result,a)
-#define macos(result,a) foreign "C" macos(result,a)
-#define matan(result,a) foreign "C" matan(result,a)
-#define matan2(result,a,b) foreign "C" matan2(result,a,b)
+Therefore every floating-point operation is executed entirely inside C.
 
-/* Hyperbolic */
-#define msinh(result,a) foreign "C" msinh(result,a)
-#define mcosh(result,a) foreign "C" mcosh(result,a)
-#define mtanh(result,a) foreign "C" mtanh(result,a)
-#define masinh(result,a) foreign "C" masinh(result,a)
-#define macosh(result,a) foreign "C" macosh(result,a)
-#define matanh(result,a) foreign "C" matanh(result,a)
+Cmm only passes memory addresses.
+*/
 
-/* Exponential */
-#define mexp(result,a) foreign "C" mexp(result,a)
-#define mexp2(result,a) foreign "C" mexp2(result,a)
-#define mexpm1(result,a) foreign "C" mexpm1(result,a)
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
 
-/* Logarithmic */
-#define mlog(result,a) foreign "C" mlog(result,a)
-#define mlog10(result,a) foreign "C" mlog10(result,a)
-#define mlog2(result,a) foreign "C" mlog2(result,a)
-#define mlog1p(result,a) foreign "C" mlog1p(result,a)
-#define mlogb(result,a) foreign "C" mlogb(result,a)
-#define milogb(result,a) foreign "C" milogb(result,a)
+void testx(void* addr, const char* decstr) {
+    double d = strtod(decstr, NULL);
+    memcpy(addr, &d, sizeof(d));
+}
 
-/* Power */
-#define mpow(result,a,b) foreign "C" mpow(result,a,b)
-#define msqrt(result,a) foreign "C" msqrt(result,a)
-#define mcbrt(result,a) foreign "C" mcbrt(result,a)
-#define mhypot(result,a,b) foreign "C" mhypot(result,a,b)
+void madd(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = da + db;
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Gamma */
-#define mtgamma(result,a) foreign "C" mtgamma(result,a)
-#define mlgamma(result,a) foreign "C" mlgamma(result,a)
+void msub(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = da - db;
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Error */
-#define merf(result,a) foreign "C" merf(result,a)
-#define merfc(result,a) foreign "C" merfc(result,a)
+void mmul(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = da * db;
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Absolute */
-#define mfabs(result,a) foreign "C" mfabs(result,a)
-#define mcopysign(result,a,b) foreign "C" mcopysign(result,a,b)
+void mdiv(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = da / db;
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Remainder */
-#define mfmod(result,a,b) foreign "C" mfmod(result,a,b)
-#define mremainder(result,a,b) foreign "C" mremainder(result,a,b)
-#define mremquo(result,quo,a,b) foreign "C" mremquo(result,quo,a,b)
+void msin(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = sin(da);
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Maximum minimum */
-#define mfmax(result,a,b) foreign "C" mfmax(result,a,b)
-#define mfmin(result,a,b) foreign "C" mfmin(result,a,b)
-#define mfdim(result,a,b) foreign "C" mfdim(result,a,b)
+void mcos(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = cos(da);
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Floating decomposition */
-#define mfrexp(result,exp,a) foreign "C" mfrexp(result,exp,a)
-#define mmodf(frac,integer,a) foreign "C" mmodf(frac,integer,a)
-#define mldexp(result,a,n) foreign "C" mldexp(result,a,n)
-#define mscalbn(result,a,n) foreign "C" mscalbn(result,a,n)
-#define mscalbln(result,a,n) foreign "C" mscalbln(result,a,n)
+void mtan(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = tan(da);
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Floating environment helpers */
-#define mnextafter(result,a,b) foreign "C" mnextafter(result,a,b)
-#define mnexttoward(result,a,b) foreign "C" mnexttoward(result,a,b)
-#define mfma(result,a,b,c) foreign "C" mfma(result,a,b,c)
-#define mnan(result,a) foreign "C" mnan(result,a)
+void masin(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = asin(da);
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Rounding */
-#define mceil(result,a) foreign "C" mceil(result,a)
-#define mfloor(result,a) foreign "C" mfloor(result,a)
-#define mtrunc(result,a) foreign "C" mtrunc(result,a)
-#define mround(result,a) foreign "C" mround(result,a)
-#define mlround(result,a) foreign "C" mlround(result,a)
-#define mllround(result,a) foreign "C" mllround(result,a)
-#define mrint(result,a) foreign "C" mrint(result,a)
-#define mlrint(result,a) foreign "C" mlrint(result,a)
-#define mllrint(result,a) foreign "C" mllrint(result,a)
-#define mnearbyint(result,a) foreign "C" mnearbyint(result,a)
+void macos(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = acos(da);
+    memcpy(result, &r, sizeof(r));
+}
 
-/* Classification wrappers */
-#define mfpclassify(result,a) foreign "C" mfpclassify(result,a)
-#define misfinite(result,a) foreign "C" misfinite(result,a)
-#define misinf(result,a) foreign "C" misinf(result,a)
-#define misnan(result,a) foreign "C" misnan(result,a)
-#define misnormal(result,a) foreign "C" misnormal(result,a)
-#define msignbit(result,a) foreign "C" msignbit(result,a)
-#define misgreater(result,a,b) foreign "C" misgreater(result,a,b)
-#define misgreaterequal(result,a,b) foreign "C" misgreaterequal(result,a,b)
-#define misless(result,a,b) foreign "C" misless(result,a,b)
-#define mislessequal(result,a,b) foreign "C" mislessequal(result,a,b)
-#define mislessgreater(result,a,b) foreign "C" mislessgreater(result,a,b)
-#define misunordered(result,a,b) foreign "C" misunordered(result,a,b)
+void matan(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = atan(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void matan2(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = atan2(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void msinh(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = sinh(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mcosh(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = cosh(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mtanh(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = tanh(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void masinh(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = asinh(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void macosh(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = acosh(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void matanh(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = atanh(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mexp(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = exp(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mexp2(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = exp2(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mexpm1(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = expm1(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlog(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = log(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlog10(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = log10(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlog2(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = log2(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlog1p(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = log1p(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlogb(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = logb(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void milogb(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int r = ilogb(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mpow(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = pow(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void msqrt(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = sqrt(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mcbrt(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = cbrt(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mhypot(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = hypot(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mtgamma(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = tgamma(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlgamma(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = lgamma(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void merf(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = erf(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void merfc(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = erfc(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfabs(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = fabs(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mcopysign(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = copysign(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfmod(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = fmod(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mremainder(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = remainder(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mremquo(void* result, void* quo, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    int q;
+    double r = remquo(da, db, &q);
+    memcpy(result, &r, sizeof(r));
+    memcpy(quo, &q, sizeof(q));
+}
+
+void mfmax(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = fmax(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfmin(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = fmin(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfdim(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = fdim(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfrexp(void* result, void* exponent, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int e;
+    double r = frexp(da, &e);
+    memcpy(result, &r, sizeof(r));
+    memcpy(exponent, &e, sizeof(e));
+}
+
+void mmodf(void* frac, void* integer, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double i;
+    double r = modf(da, &i);
+    memcpy(frac, &r, sizeof(r));
+    memcpy(integer, &i, sizeof(i));
+}
+
+void mldexp(void* result, void* a, int exp) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = ldexp(da, exp);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mscalbn(void* result, void* a, int exp) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = scalbn(da, exp);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mscalbln(void* result, void* a, long exp) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = scalbln(da, exp);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mnextafter(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = nextafter(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mnexttoward(void* result, void* a, void* b) {
+    double da;
+    long double db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    double r = nexttoward(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfma(void* result, void* a, void* b, void* c) {
+    double da, db, dc;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    memcpy(&dc, c, sizeof(dc));
+    double r = fma(da, db, dc);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mnan(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = nan((const char*)&da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mceil(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = ceil(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfloor(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = floor(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mtrunc(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = trunc(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mround(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = round(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlround(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    long r = lround(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mllround(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    long long r = llround(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mrint(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = rint(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mlrint(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    long r = lrint(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mllrint(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    long long r = llrint(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mnearbyint(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    double r = nearbyint(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mfpclassify(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int r = fpclassify(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misfinite(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int r = isfinite(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misinf(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int r = isinf(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misnan(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int r = isnan(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misnormal(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int r = isnormal(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void msignbit(void* result, void* a) {
+    double da;
+    memcpy(&da, a, sizeof(da));
+    int r = signbit(da);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misgreater(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    int r = isgreater(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misgreaterequal(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    int r = isgreaterequal(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misless(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    int r = isless(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mislessequal(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    int r = islessequal(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void mislessgreater(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    int r = islessgreater(da, db);
+    memcpy(result, &r, sizeof(r));
+}
+
+void misunordered(void* result, void* a, void* b) {
+    double da, db;
+    memcpy(&da, a, sizeof(da));
+    memcpy(&db, b, sizeof(db));
+    int r = isunordered(da, db);
+    memcpy(result, &r, sizeof(r));
+}
