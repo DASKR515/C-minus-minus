@@ -1,0 +1,28 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+
+section "bss" { x: bits64; }
+section "bss" { y: bits64; }
+section "bss" { res: bits32; }
+
+section "data" { s1: bits8[] "5.5\0"; }
+section "data" { s2: bits8[] "nan\0"; }
+section "data" { fmt: bits8[] "result = %d\n\0"; }
+
+export main;
+
+main() {
+    bits32 r;
+
+    foreign "C" testx(x, s1 "ptr");
+    foreign "C" testx(y, s2 "ptr");
+
+    misunordered(res, x, y);
+
+    r = bits32[res];
+
+    moutf(fmt "ptr", r);
+
+    mexit(0);
+}
