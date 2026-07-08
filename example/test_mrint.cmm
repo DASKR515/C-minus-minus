@@ -1,0 +1,25 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+
+section "bss" { x: bits64; }
+section "bss" { res: bits64; }
+
+section "data" { s1: bits8[] "5.5\0"; }
+section "data" { fmt: bits8[] "result = %f\n\0"; }
+
+export main;
+
+main() {
+    float64 r;
+
+    foreign "C" testx(x, s1 "ptr");
+
+    mrint(res, x);
+
+    r = float64[res];
+
+    moutf(fmt "ptr", r);
+
+    mexit(0);
+}
