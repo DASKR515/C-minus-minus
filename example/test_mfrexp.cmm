@@ -1,0 +1,30 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+
+section "bss" { x: bits64; }
+section "bss" { res: bits64; }
+section "bss" { exponent: bits32; }
+
+section "data" { s1: bits8[] "5.5\0"; }
+section "data" { fmt1: bits8[] "mantissa = %f\n\0"; }
+section "data" { fmt2: bits8[] "exponent = %d\n\0"; }
+
+export main;
+
+main() {
+    float64 r;
+    bits32 e;
+
+    foreign "C" testx(x, s1 "ptr");
+
+    mfrexp(res, exponent, x);
+
+    r = float64[res];
+    e = bits32[exponent];
+
+    moutf(fmt1 "ptr", r);
+    moutf(fmt2 "ptr", e);
+
+    mexit(0);
+}
