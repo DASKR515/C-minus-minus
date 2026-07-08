@@ -1,0 +1,215 @@
+/*
+ * cmmath_demo.cmm - Debug version to find crash point
+ */
+
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+
+section "bss" { res: bits64; }
+section "bss" { res_i: bits64; }
+section "bss" { res_l: bits64; }
+section "bss" { res_ll: bits64; }
+section "bss" { a: bits64; }
+section "bss" { b: bits64; }
+section "bss" { c: bits64; }
+section "bss" { d: bits64; }
+section "bss" { e: bits64; }
+section "bss" { f: bits64; }
+section "bss" { exp_result: bits64; }
+section "bss" { quo_result: bits64; }
+section "bss" { int_part: bits64; }
+section "bss" { frac_part: bits64; }
+section "bss" { const_val: bits64; }
+
+section "data" { fmt: bits8[] "%f\n\0"; }
+section "data" { fmt_int: bits8[] "%d\n\0"; }
+section "data" { s1: bits8[] "5\0"; }
+section "data" { s2: bits8[] "3\0"; }
+section "data" { s3: bits8[] "2\0"; }
+section "data" { s4: bits8[] "4\0"; }
+section "data" { s5: bits8[] "10\0"; }
+section "data" { s05: bits8[] "0.5\0"; }
+section "data" { s_neg1: bits8[] "-1\0"; }
+
+export main;
+
+main() {
+    float64 r, r2;
+    bits64 i;
+    bits64 l;
+    bits64 ll;
+
+    foreign "C" testx(a, s1 "ptr");
+    foreign "C" testx(b, s2 "ptr");
+    foreign "C" testx(c, s3 "ptr");
+    foreign "C" testx(d, s4 "ptr");
+    foreign "C" testx(e, s5 "ptr");
+    foreign "C" testx(f, s05 "ptr");
+    foreign "C" testx(const_val, s_neg1 "ptr");
+
+    /* Basic Arithmetic */
+    foreign "C" printf("1: madd 2 args\n");
+    madd(res, a, b);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("2: madd 3 args\n");
+    madd(res, a, b, c);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("3: madd 4 args\n");
+    madd(res, a, b, c, d);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("4: madd 5 args\n");
+    madd(res, a, b, c, d, e);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("5: msub\n");
+    msub(res, a, b, c, d);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("6: mmul\n");
+    mmul(res, a, b, c, d);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("7: mfdiv\n");
+    mfdiv(res, a, b, c, d);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("8: mE\n");
+    mE(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("9: mLOG2E\n");
+    mLOG2E(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("10: mLOG10E\n");
+    mLOG10E(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("11: mLN2\n");
+    mLN2(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("12: mLN10\n");
+    mLN10(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("13: mPI\n");
+    mPI(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("14: mPI_2\n");
+    mPI_2(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("15: mPI_4\n");
+    mPI_4(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("16: m1_PI\n");
+    m1_PI(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("17: m2_PI\n");
+    m2_PI(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("18: m2_SQRTPI\n");
+    m2_SQRTPI(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("19: mSQRT2\n");
+    mSQRT2(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("20: mSQRT1_2\n");
+    mSQRT1_2(res);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("21: msin\n");
+    msin(res, a);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("22: mcos\n");
+    mcos(res, a);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("23: mtan\n");
+    mtan(res, a);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("24: masin\n");
+    masin(res, f);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("25: macos\n");
+    macos(res, f);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("26: matan\n");
+    matan(res, a);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" printf("27: matan2\n");
+    matan2(res, a, b);
+    r = float64[res];
+    moutf(fmt "ptr", r);
+    foreign "C" fflush(0);
+
+    foreign "C" exit(0);
+}
