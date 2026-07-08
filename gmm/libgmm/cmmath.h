@@ -2,7 +2,7 @@
               --    by JABIR aka <DASKR>
               --    This cmmath.h file is a wrapper for the C Math library for C-- .
               --    Names follow the 'm' prefix convention to keep your FFI boilerplate clean.
-              --    ver <1.0.0>
+              --    ver <1.0.4>
 */
 #pragma once
 #include "Cmm.h"
