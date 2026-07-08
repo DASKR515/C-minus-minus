@@ -8,6 +8,7 @@ operations are written directly in Cmm.
 Therefore every floating-point operation is executed entirely inside C.
 
 Cmm only passes memory addresses.
+ver <1.0.3>
 */
 
 #include <stdint.h>
