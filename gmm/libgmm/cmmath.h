@@ -7,13 +7,30 @@
 #pragma once
 #include "Cmm.h"
 
-/* Basic arithmetic */
-#define madd(result,a,b) foreign "C" madd(result,a,b)
-#define msub(result,a,b) foreign "C" msub(result,a,b)
-#define mmul(result,a,b) foreign "C" mmul(result,a,b)
-#define mfdiv(result,a,b) foreign "C" mdiv(result,a,b)
 
-/* Trigonometric */
+#undef mdiv
+
+
+#define madd(result, ...) foreign "C" madd(result, __VA_ARGS__)
+#define msub(result, ...) foreign "C" msub(result, __VA_ARGS__)
+#define mmul(result, ...) foreign "C" mmul(result, __VA_ARGS__)
+#define mfdiv(result, ...) foreign "C" mfdiv(result, __VA_ARGS__)
+
+#define mE(result) foreign "C" mE(result)
+#define mLOG2E(result) foreign "C" mLOG2E(result)
+#define mLOG10E(result) foreign "C" mLOG10E(result)
+#define mLN2(result) foreign "C" mLN2(result)
+#define mLN10(result) foreign "C" mLN10(result)
+#define mPI(result) foreign "C" mPI(result)
+#define mPI_2(result) foreign "C" mPI_2(result)
+#define mPI_4(result) foreign "C" mPI_4(result)
+#define m1_PI(result) foreign "C" m1_PI(result)
+#define m2_PI(result) foreign "C" m2_PI(result)
+#define m2_SQRTPI(result) foreign "C" m2_SQRTPI(result)
+#define mSQRT2(result) foreign "C" mSQRT2(result)
+#define mSQRT1_2(result) foreign "C" mSQRT1_2(result)
+
+
 #define msin(result,a) foreign "C" msin(result,a)
 #define mcos(result,a) foreign "C" mcos(result,a)
 #define mtan(result,a) foreign "C" mtan(result,a)
@@ -22,7 +39,6 @@
 #define matan(result,a) foreign "C" matan(result,a)
 #define matan2(result,a,b) foreign "C" matan2(result,a,b)
 
-/* Hyperbolic */
 #define msinh(result,a) foreign "C" msinh(result,a)
 #define mcosh(result,a) foreign "C" mcosh(result,a)
 #define mtanh(result,a) foreign "C" mtanh(result,a)
@@ -30,12 +46,12 @@
 #define macosh(result,a) foreign "C" macosh(result,a)
 #define matanh(result,a) foreign "C" matanh(result,a)
 
-/* Exponential */
+
 #define mexp(result,a) foreign "C" mexp(result,a)
 #define mexp2(result,a) foreign "C" mexp2(result,a)
 #define mexpm1(result,a) foreign "C" mexpm1(result,a)
 
-/* Logarithmic */
+
 #define mlog(result,a) foreign "C" mlog(result,a)
 #define mlog10(result,a) foreign "C" mlog10(result,a)
 #define mlog2(result,a) foreign "C" mlog2(result,a)
@@ -43,48 +59,45 @@
 #define mlogb(result,a) foreign "C" mlogb(result,a)
 #define milogb(result,a) foreign "C" milogb(result,a)
 
-/* Power */
+
 #define mpow(result,a,b) foreign "C" mpow(result,a,b)
 #define msqrt(result,a) foreign "C" msqrt(result,a)
 #define mcbrt(result,a) foreign "C" mcbrt(result,a)
 #define mhypot(result,a,b) foreign "C" mhypot(result,a,b)
 
-/* Gamma */
 #define mtgamma(result,a) foreign "C" mtgamma(result,a)
 #define mlgamma(result,a) foreign "C" mlgamma(result,a)
 
-/* Error */
+
 #define merf(result,a) foreign "C" merf(result,a)
 #define merfc(result,a) foreign "C" merfc(result,a)
 
-/* Absolute */
 #define mfabs(result,a) foreign "C" mfabs(result,a)
 #define mcopysign(result,a,b) foreign "C" mcopysign(result,a,b)
 
-/* Remainder */
+
 #define mfmod(result,a,b) foreign "C" mfmod(result,a,b)
 #define mremainder(result,a,b) foreign "C" mremainder(result,a,b)
 #define mremquo(result,quo,a,b) foreign "C" mremquo(result,quo,a,b)
 
-/* Maximum minimum */
+
 #define mfmax(result,a,b) foreign "C" mfmax(result,a,b)
 #define mfmin(result,a,b) foreign "C" mfmin(result,a,b)
 #define mfdim(result,a,b) foreign "C" mfdim(result,a,b)
 
-/* Floating decomposition */
 #define mfrexp(result,exp,a) foreign "C" mfrexp(result,exp,a)
 #define mmodf(frac,integer,a) foreign "C" mmodf(frac,integer,a)
 #define mldexp(result,a,n) foreign "C" mldexp(result,a,n)
 #define mscalbn(result,a,n) foreign "C" mscalbn(result,a,n)
 #define mscalbln(result,a,n) foreign "C" mscalbln(result,a,n)
 
-/* Floating environment helpers */
+
 #define mnextafter(result,a,b) foreign "C" mnextafter(result,a,b)
 #define mnexttoward(result,a,b) foreign "C" mnexttoward(result,a,b)
 #define mfma(result,a,b,c) foreign "C" mfma(result,a,b,c)
 #define mnan(result,a) foreign "C" mnan(result,a)
 
-/* Rounding */
+
 #define mceil(result,a) foreign "C" mceil(result,a)
 #define mfloor(result,a) foreign "C" mfloor(result,a)
 #define mtrunc(result,a) foreign "C" mtrunc(result,a)
@@ -96,7 +109,6 @@
 #define mllrint(result,a) foreign "C" mllrint(result,a)
 #define mnearbyint(result,a) foreign "C" mnearbyint(result,a)
 
-/* Classification wrappers */
 #define mfpclassify(result,a) foreign "C" mfpclassify(result,a)
 #define misfinite(result,a) foreign "C" misfinite(result,a)
 #define misinf(result,a) foreign "C" misinf(result,a)
