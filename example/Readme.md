@@ -2,6 +2,8 @@
 
 # cmmath.h
 
+##[wiki and doc math all](https://github.com/DASKR515/C-minus-minus/blob/main/example/ReadmeMath.md)
+
 **A floating-point math library for C-- (Cmm) built around the NCG-Isolation Architecture.**
 
 *Safe floating-point operations for GHC Cmm by isolating the Native Code Generator (NCG) from floating-point semantics.*
