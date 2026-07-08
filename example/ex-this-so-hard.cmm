@@ -1,5 +1,5 @@
 /*
- * cmmath_demo.cmm - Debug version to find crash point
+ * cmmath_all - Debug version to find crash point
  */
 
 #include "Cmm.h"
