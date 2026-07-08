@@ -1,0 +1,33 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+
+section "bss" { x: bits64; }
+section "bss" { y: bits64; }
+section "bss" { res: bits64; }
+section "bss" { quo: bits32; }
+
+section "data" { s1: bits8[] "10.5\0"; }
+section "data" { s2: bits8[] "3\0"; }
+section "data" { fmt1: bits8[] "remainder = %f\n\0"; }
+section "data" { fmt2: bits8[] "quotient = %d\n\0"; }
+
+export main;
+
+main() {
+    float64 r;
+    bits32 q;
+
+    foreign "C" testx(x, s1 "ptr");
+    foreign "C" testx(y, s2 "ptr");
+
+    mremquo(res, quo, x, y);
+
+    r = float64[res];
+    q = bits32[quo];
+
+    moutf(fmt1 "ptr", r);
+    moutf(fmt2 "ptr", q);
+
+    mexit(0);
+}
