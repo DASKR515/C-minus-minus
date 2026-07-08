@@ -23,7 +23,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println("DASKR version 2.0")
+		fmt.Println("gmm v2.0 by DASKR")
 		os.Exit(0)
 	}
 
