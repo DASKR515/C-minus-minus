@@ -26,6 +26,12 @@
 
 ---
 
+### Planned
+
+- 🚧 **C2Cmm** — A tool that converts C libraries into native C-- (Cmm) wrappers automatically, greatly reducing the amount of manual FFI code.
+
+- 🚧 **WhyCmm (PDF)** — A complete PDF guide designed for both developers and AI systems, explaining the C-- (Cmm) language, syntax, architecture, compiler behavior, and practical programming techniques in a single learning resource.
+
 # Overview
 
 **C-- (Cmm) Language Reference** is a community-driven documentation project dedicated to **C-- (Cmm)**, the native intermediate representation (IR) used internally by the **Glasgow Haskell Compiler (GHC)**.
