@@ -16,6 +16,15 @@
 </div>
 
 ---
+## Quick Links
+
+- 📖 [Examples Wiki](https://github.com/DASKR515/C-minus-minus/blob/main/example/Readme.md)
+- 🧮 [cmmath Solution](https://github.com/DASKR515/C-minus-minus/blob/main/example/ReadmeMath.md)
+- 📚 [stdc--.h Wiki](https://github.com/DASKR515/C-minus-minus/blob/main/stdc--.h/Readme.md)
+- ⚡ [gmm Releases](https://github.com/DASKR515/C-minus-minus/releases)
+- 🔬 [Why GHC?](https://github.com/DASKR515/C-minus-minus/tree/main/whyGHC)
+
+---
 
 # Overview
 
