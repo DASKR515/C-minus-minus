@@ -2,7 +2,7 @@
 
 #include "Cmm.h"
 #include "stdc--.h"
-#include "cmmath.h"
+
 
 
 section "data" { hdr: bits8[] "\n== constants ==\n\0"; }
