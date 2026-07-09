@@ -191,7 +191,7 @@ export main;
 
 main() {
     mout(msg "ptr");
-    foreign "C" exit(0);
+    mexit(0);
 }
 ```
 
