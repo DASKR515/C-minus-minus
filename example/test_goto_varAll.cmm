@@ -1,0 +1,64 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+section "bss" { w1: bits64; }
+section "data" { a: bits8[] "2\0"; }
+section "data" { fmt: bits8[] "done = %f\n\0"; }
+section "bss" { log1: bits64; }
+section "data" { true: bits8[] "ture\0"; }
+section "bss" { sin1: bits64; }
+section "bss" { sub1: bits64; }
+section "bss" { add1: bits64; }
+section "data" {out: bits8[] "%g\n\0"; }
+
+
+
+export Winmain;
+export main;
+
+
+Winmain(){
+
+	jump main[];
+}
+
+main(){
+        float64 we;
+        bits64 g;
+        bits32 gg;
+
+        foreign "C" testx(w1, a, "ptr");
+
+        mlog2(log1, w1);
+        
+
+        g = bits64[log1];
+        
+
+        if (g >= 0) goto true1;
+        
+        mout("false");
+        mexit(1);
+
+true1:
+        mout(true "ptr");
+        
+        msin(sin1, log1); 
+        
+        we = float64[sin1];
+        moutf(out, "ptr", we);
+
+		if (bits64[sin1] >= 0 ) goto hmm;
+		foreign "C" printf("not hmm\0");
+		mexit(0);
+
+hmm:
+
+		madd(add1, log1, sin1, 0);
+		msub(sub1, add1, log1, 0);
+
+		gg = bits32[sub1];
+
+		moutf(out, "ptr", gg);		
+		mexit(0);	        
+}
