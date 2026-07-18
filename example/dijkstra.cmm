@@ -1,0 +1,262 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+section "bss" { t: bits64; }
+section "bss" { n: bits64; }
+section "bss" { m: bits64; }
+section "bss" { Cap: bits64; }
+section "bss" { k: bits64; }
+section "bss" { s_in: bits64; }
+section "bss" { u_in: bits64; }
+section "bss" { v_in: bits64; }
+section "bss" { w_in: bits64; }
+
+section "bss" { heapTimeArr: bits64; }
+section "bss" { heapUArr: bits64; }
+section "bss" { heapCArr: bits64; }
+section "bss" { heapSize: bits64; }
+section "bss" { heapCapacity: bits64; }
+
+section "data" { fmt1: bits8[] "%lld\0"; }
+section "data" { fmt4: bits8[] "%lld %lld %lld %lld\0"; }
+section "data" { fmt3: bits8[] "%lld %lld %lld\0"; }
+section "data" { fmt_out: bits8[] "%lld\n\0"; }
+
+export main;
+
+main() {
+    bits64 tt, tc;
+    bits64 nn, mm, cc, kk;
+    bits64 i;
+    bits64 refill, headArr, edgeTo, edgeW, edgeNext, distArr;
+    bits64 edgeCount;
+    bits64 su, sv, sw;
+    bits64 mn;
+    bits64 curTime, curU, curC;
+    bits64 e, vv, ww, nextC, newTime;
+    bits64 idxDist, arrSize;
+    bits64 newHeapPtr;
+    bits64 hsz, hcap, hidx, hp, htmp;
+    bits64 hlast, hi, hl, hr, hsmallest;
+    min(fmt1 "ptr", t "ptr");
+    tt = bits64[t];
+    tc = 0;
+    test_loop:
+    if (tc >= tt) goto end_program;
+        min(fmt4 "ptr", n "ptr", m "ptr", Cap "ptr", k "ptr");
+        nn = bits64[n];
+        mm = bits64[m];
+        cc = bits64[Cap];
+        kk = bits64[k];
+        (refill) = mnewz(nn + 1, 8);
+        bits64[refill + 1*8] = 1;
+        i = 0;
+        read_stations:
+        if (i >= kk) goto stations_done;
+            min(fmt1 "ptr", s_in "ptr");
+            su = bits64[s_in];
+            bits64[refill + su*8] = 1;
+            i = i + 1;
+            goto read_stations;
+        stations_done:
+        (headArr) = mnew((nn + 1) * 8);
+        i = 0;
+        init_head:
+        if (i > nn) goto head_done;
+            bits64[headArr + i*8] = -1;
+            i = i + 1;
+            goto init_head;
+        head_done:
+        (edgeTo) = mnew(mm * 2 * 8);
+        (edgeW) = mnew(mm * 2 * 8);
+        (edgeNext) = mnew(mm * 2 * 8);
+        edgeCount = 0;
+        i = 0;
+        read_edges:
+        if (i >= mm) goto edges_done;
+            min(fmt3 "ptr", u_in "ptr", v_in "ptr", w_in "ptr");
+            su = bits64[u_in];
+            sv = bits64[v_in];
+            sw = bits64[w_in];
+            bits64[edgeTo + edgeCount*8] = sv;
+            bits64[edgeW + edgeCount*8] = sw;
+            bits64[edgeNext + edgeCount*8] = bits64[headArr + su*8];
+            bits64[headArr + su*8] = edgeCount;
+            edgeCount = edgeCount + 1;
+            bits64[edgeTo + edgeCount*8] = su;
+            bits64[edgeW + edgeCount*8] = sw;
+            bits64[edgeNext + edgeCount*8] = bits64[headArr + sv*8];
+            bits64[headArr + sv*8] = edgeCount;
+            edgeCount = edgeCount + 1;
+            i = i + 1;
+            goto read_edges;
+        edges_done:
+        arrSize = (nn + 1) * (cc + 1);
+        (distArr) = mnew(arrSize * 8);
+        i = 0;
+        init_dist:
+        if (i >= arrSize) goto dist_done;
+            bits64[distArr + i*8] = 1000000000;
+            i = i + 1;
+            goto init_dist;
+        dist_done:
+        bits64[heapCapacity] = 64;
+        bits64[heapSize] = 0;
+        (newHeapPtr) = mnew(64 * 8);
+        bits64[heapTimeArr] = newHeapPtr;
+        (newHeapPtr) = mnew(64 * 8);
+        bits64[heapUArr] = newHeapPtr;
+        (newHeapPtr) = mnew(64 * 8);
+        bits64[heapCArr] = newHeapPtr;
+        idxDist = 1*(cc + 1) + cc;
+        bits64[distArr + idxDist*8] = 0;
+        hsz = bits64[heapSize];
+        hcap = bits64[heapCapacity];
+        if (hsz == hcap) {
+            hcap = hcap * 2;
+            bits64[heapCapacity] = hcap;
+            (newHeapPtr) = mresize(bits64[heapTimeArr], hcap * 8);
+            bits64[heapTimeArr] = newHeapPtr;
+            (newHeapPtr) = mresize(bits64[heapUArr], hcap * 8);
+            bits64[heapUArr] = newHeapPtr;
+            (newHeapPtr) = mresize(bits64[heapCArr], hcap * 8);
+            bits64[heapCArr] = newHeapPtr;
+        }
+        hidx = hsz;
+        bits64[bits64[heapTimeArr] + hidx*8] = 0;
+        bits64[bits64[heapUArr] + hidx*8] = 1;
+        bits64[bits64[heapCArr] + hidx*8] = cc;
+        bits64[heapSize] = hsz + 1;
+        push1_siftup_loop:
+        if (hidx <= 0) goto push1_siftup_done;
+        hp = (hidx - 1) / 2;
+        if (bits64[bits64[heapTimeArr] + hp*8] <= bits64[bits64[heapTimeArr] + hidx*8]) goto push1_siftup_done;
+            htmp = bits64[bits64[heapTimeArr] + hp*8];
+            bits64[bits64[heapTimeArr] + hp*8] = bits64[bits64[heapTimeArr] + hidx*8];
+            bits64[bits64[heapTimeArr] + hidx*8] = htmp;
+            htmp = bits64[bits64[heapUArr] + hp*8];
+            bits64[bits64[heapUArr] + hp*8] = bits64[bits64[heapUArr] + hidx*8];
+            bits64[bits64[heapUArr] + hidx*8] = htmp;
+            htmp = bits64[bits64[heapCArr] + hp*8];
+            bits64[bits64[heapCArr] + hp*8] = bits64[bits64[heapCArr] + hidx*8];
+            bits64[bits64[heapCArr] + hidx*8] = htmp;
+            hidx = hp;
+            goto push1_siftup_loop;
+        push1_siftup_done:
+        mn = -1;
+        dijkstra_loop:
+        if (bits64[heapSize] <= 0) goto dijkstra_done;
+            hsz = bits64[heapSize];
+            curTime = bits64[bits64[heapTimeArr] + 0*8];
+            curU = bits64[bits64[heapUArr] + 0*8];
+            curC = bits64[bits64[heapCArr] + 0*8];
+            hlast = hsz - 1;
+            bits64[bits64[heapTimeArr] + 0*8] = bits64[bits64[heapTimeArr] + hlast*8];
+            bits64[bits64[heapUArr] + 0*8] = bits64[bits64[heapUArr] + hlast*8];
+            bits64[bits64[heapCArr] + 0*8] = bits64[bits64[heapCArr] + hlast*8];
+            hsz = hsz - 1;
+            bits64[heapSize] = hsz;
+            hi = 0;
+            pop_siftdown_loop:
+            hl = 2*hi + 1;
+            hr = 2*hi + 2;
+            hsmallest = hi;
+            if (hl < hsz) {
+                if (bits64[bits64[heapTimeArr] + hl*8] < bits64[bits64[heapTimeArr] + hsmallest*8]) {
+                    hsmallest = hl;
+                }
+            }
+            if (hr < hsz) {
+                if (bits64[bits64[heapTimeArr] + hr*8] < bits64[bits64[heapTimeArr] + hsmallest*8]) {
+                    hsmallest = hr;
+                }
+            }
+            if (hsmallest == hi) goto pop_siftdown_done;
+                htmp = bits64[bits64[heapTimeArr] + hsmallest*8];
+                bits64[bits64[heapTimeArr] + hsmallest*8] = bits64[bits64[heapTimeArr] + hi*8];
+                bits64[bits64[heapTimeArr] + hi*8] = htmp;
+                htmp = bits64[bits64[heapUArr] + hsmallest*8];
+                bits64[bits64[heapUArr] + hsmallest*8] = bits64[bits64[heapUArr] + hi*8];
+                bits64[bits64[heapUArr] + hi*8] = htmp;
+                htmp = bits64[bits64[heapCArr] + hsmallest*8];
+                bits64[bits64[heapCArr] + hsmallest*8] = bits64[bits64[heapCArr] + hi*8];
+                bits64[bits64[heapCArr] + hi*8] = htmp;
+                hi = hsmallest;
+                goto pop_siftdown_loop;
+            pop_siftdown_done:
+            idxDist = curU*(cc + 1) + curC;
+            if (curTime > bits64[distArr + idxDist*8]) goto dijkstra_loop;
+            if (curU == nn) {
+                mn = curTime;
+                goto dijkstra_done;
+            }
+            e = bits64[headArr + curU*8];
+            edge_loop:
+            if (e == -1) goto edge_loop_done;
+                vv = bits64[edgeTo + e*8];
+                ww = bits64[edgeW + e*8];
+                if (curC >= ww) {
+                    nextC = curC - ww;
+                    if (bits64[refill + vv*8] != 0) {
+                        nextC = cc;
+                    }
+                    newTime = curTime + ww;
+                    idxDist = vv*(cc + 1) + nextC;
+                    if (newTime < bits64[distArr + idxDist*8]) {
+                        bits64[distArr + idxDist*8] = newTime;
+                        hsz = bits64[heapSize];
+                        hcap = bits64[heapCapacity];
+                        if (hsz == hcap) {
+                            hcap = hcap * 2;
+                            bits64[heapCapacity] = hcap;
+                            (newHeapPtr) = mresize(bits64[heapTimeArr], hcap * 8);
+                            bits64[heapTimeArr] = newHeapPtr;
+                            (newHeapPtr) = mresize(bits64[heapUArr], hcap * 8);
+                            bits64[heapUArr] = newHeapPtr;
+                            (newHeapPtr) = mresize(bits64[heapCArr], hcap * 8);
+                            bits64[heapCArr] = newHeapPtr;
+                        }
+                        hidx = hsz;
+                        bits64[bits64[heapTimeArr] + hidx*8] = newTime;
+                        bits64[bits64[heapUArr] + hidx*8] = vv;
+                        bits64[bits64[heapCArr] + hidx*8] = nextC;
+                        bits64[heapSize] = hsz + 1;
+                        push2_siftup_loop:
+                        if (hidx <= 0) goto push2_siftup_done;
+                        hp = (hidx - 1) / 2;
+                        if (bits64[bits64[heapTimeArr] + hp*8] <= bits64[bits64[heapTimeArr] + hidx*8]) goto push2_siftup_done;
+                            htmp = bits64[bits64[heapTimeArr] + hp*8];
+                            bits64[bits64[heapTimeArr] + hp*8] = bits64[bits64[heapTimeArr] + hidx*8];
+                            bits64[bits64[heapTimeArr] + hidx*8] = htmp;
+                            htmp = bits64[bits64[heapUArr] + hp*8];
+                            bits64[bits64[heapUArr] + hp*8] = bits64[bits64[heapUArr] + hidx*8];
+                            bits64[bits64[heapUArr] + hidx*8] = htmp;
+                            htmp = bits64[bits64[heapCArr] + hp*8];
+                            bits64[bits64[heapCArr] + hp*8] = bits64[bits64[heapCArr] + hidx*8];
+                            bits64[bits64[heapCArr] + hidx*8] = htmp;
+                            hidx = hp;
+                            goto push2_siftup_loop;
+                        push2_siftup_done:
+                    }
+                }
+                e = bits64[edgeNext + e*8];
+                goto edge_loop;
+            edge_loop_done:
+            goto dijkstra_loop;
+        dijkstra_done:
+        moutf(fmt_out "ptr", mn);
+        mflush(0);
+        mfree(refill);
+        mfree(headArr);
+        mfree(edgeTo);
+        mfree(edgeW);
+        mfree(edgeNext);
+        mfree(distArr);
+        mfree(bits64[heapTimeArr]);
+        mfree(bits64[heapUArr]);
+        mfree(bits64[heapCArr]);
+        tc = tc + 1;
+        goto test_loop;
+    end_program:
+    mexit(0);
+}
