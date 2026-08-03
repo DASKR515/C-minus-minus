@@ -106,7 +106,7 @@ Because `cc` has no notion of the Haskell RTS, it links only what the object fil
 ## Linux
 
 ```bash
-go build -o gmm main.go
+go build -o gmm mainAll.go
 sudo mv gmm /usr/local/bin/
 ```
 
@@ -124,7 +124,7 @@ must be available in `PATH`.
 Build normally:
 
 ```powershell
-go build -o gmm.exe main.go
+go build -o gmm.exe mainAll.go
 ```
 
 On its first execution, `gmm` checks whether the required toolchains are installed.
