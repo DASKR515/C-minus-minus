@@ -309,5 +309,5 @@ problem
 #define ASSERT_FILE(ptr) \
     if (ptr == 0) { \
         foreign "C" puts("Error: File!\0" "ptr"); \
-        return (1); \
-    }
+        mexit(1); \
+}
