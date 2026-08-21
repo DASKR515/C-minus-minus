@@ -5,7 +5,7 @@
               --    with continuous maintenance and new additions on the way. 
               --    As for math.h and the like, 
               --    they will be wrapped later but they're still experimental because they're too complex compared to the other libraries.
-              --    ver <1.0.1>
+              --    ver <2.0.0>
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠰⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⡄⠀⠀⠸⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -30,6 +30,8 @@
 
 #pragma once
 #include "Cmm.h"
+
+#define ffi           foreign "C" 
 
 #define mget_stdin()           foreign "C" fdopen(0, "r\0")
 #define mout(str)              foreign "C" puts(str)
@@ -300,3 +302,12 @@ problem
 #define mc16rtomb(s, c16, ps)       foreign "C" c16rtomb(s, c16, ps)
 #define mmbrtoc32(pc32, s, n, ps)   foreign "C" mbrtoc32(pc32, s, n, ps)
 #define mc32rtomb(s, c32, ps)       foreign "C" c32rtomb(s, c32, ps)
+
+#define MODE_WRITE "w\0"
+#define MODE_READ  "r\0"
+
+#define ASSERT_FILE(ptr) \
+    if (ptr == 0) { \
+        foreign "C" puts("Error: File!\0" "ptr"); \
+        return (1); \
+    }
