@@ -1,0 +1,32 @@
+#include "Cmm.h"
+#include "stdc--.h"
+// data
+section "data" { fmt: bits8[] "%s\n\0"; }
+section "data" { in_fmt: bits8[] "%s\0"; }
+section "data" { tag1: bits8[] "Enter First Name:\n\0"; }
+section "data" { tag2: bits8[] "Enter Second Name:\n\0"; }
+section "data" { tag3: bits8[] "Enter Third Name:\n\0"; }
+section "data" { output_header: bits8[] "\n--- Entered Names ---\n\0"; }
+// bss
+section "bss" { name_1: bits8[100]; }
+section "bss" { name_2: bits8[100]; }
+section "bss" { name_3: bits8[100]; }
+export Winmain;
+export main;
+Winmain(){
+        jump main[];
+}
+main(){
+        mout(tag1 "ptr");
+        min(in_fmt "ptr", name_1 "ptr");
+        mout(tag2 "ptr");
+        min(in_fmt "ptr", name_2 "ptr");
+        mout(tag3 "ptr");
+        min(in_fmt "ptr", name_3 "ptr");
+        mout(output_header "ptr");
+        moutf(fmt "ptr", name_1 "ptr");
+        moutf(fmt "ptr", name_2 "ptr");
+        moutf(fmt "ptr", name_3 "ptr");
+
+        mexit(0);
+}
