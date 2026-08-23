@@ -1,0 +1,34 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmath.h"
+
+section "bss" { i_val: bits64; }
+section "bss" { sq_result: bits64; }
+section "bss" { numbuf: bits8[16]; }
+section "data" { numfmt: bits8[] "%d\0"; }
+section "data" { fmt: bits8[] "sqrt(%d) = %f\n\0"; }
+
+export main;
+
+main() {
+    bits32 i;
+    float64 r;
+
+    i = 1;
+
+loop_start:
+    if (i <= 5) {
+        smoutf(numbuf "ptr", numfmt "ptr", i);
+        ffi testx(i_val, numbuf "ptr");
+
+        msqrt(sq_result, i_val);
+
+        r = float64[sq_result];
+        moutf(fmt "ptr", i, r);
+
+        i = i + 1;
+        goto loop_start;
+    }
+
+    mexit(0);
+}
