@@ -1,0 +1,15 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits64 p;
+
+    (p) = mnew(32);
+    W_[p] = 12345;
+    moutf("stored value = %d\n", W_[p]);
+    mfree(p);
+
+    mexit(0);
+}
