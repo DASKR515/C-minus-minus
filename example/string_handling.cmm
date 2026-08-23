@@ -1,0 +1,27 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+section "data" { s1: bits8[] "Hello\0"; }
+section "data" { s2: bits8[] "World\0"; }
+section "bss" {
+    buf: bits8[64];
+}
+
+export main;
+
+main() {
+    bits32 len;
+
+    (len) = mstrlen(s1 "ptr");
+    moutf("length of s1 = %d\n", len);
+
+    mstrcpy(buf "ptr", s1 "ptr");
+    mstrcat(buf "ptr", s2 "ptr");
+    moutf("concatenated = %s\n", buf "ptr");
+
+    if ( len != 0) {
+        moutf("s1 and s2 are different\n");
+    }
+
+    mexit(0);
+}
