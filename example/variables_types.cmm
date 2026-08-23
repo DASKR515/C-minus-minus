@@ -1,0 +1,26 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits8 a;
+    bits16 b;
+    bits32 c;
+    bits64 d;
+    float32 e;
+    float64 f;
+    W_ g;
+// and bits128 bitsXXX
+    a = 7;
+    b = 300;
+    c = 70000;
+    d = 5000000000;
+    e = 1.5;
+    f = 3.14159;
+    g = 42;
+
+    moutf("a=%d b=%d c=%d d=%ld\n", a, b, c, d);
+    moutf("e=%f f=%f g=%d\n", e, f, g);
+    mexit(0);
+}
