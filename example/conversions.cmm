@@ -1,0 +1,28 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits8 small;
+    bits32 wide;
+    float64 f;
+    bits32 back;
+
+    small = 200;
+    wide = %zx32(small);
+    moutf("zero-extend 8->32 = %d\n", wide);
+
+    wide = 70000;
+    small = %lobits8(wide);
+    moutf("truncate 32->8 = %d\n", small);
+
+    f = %i2f64(42);
+    moutf("int to float = %f\n", f);
+
+    f = 9.99;
+    back = %f2i32(f);
+    moutf("float to int = %d\n", back);
+
+    mexit(0);
+}
