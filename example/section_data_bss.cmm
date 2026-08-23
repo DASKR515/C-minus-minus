@@ -1,0 +1,19 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+section "data" {
+    greeting: bits8[] "stored in .data\n\0";
+}
+
+section "bss" {
+    counter: bits32;
+}
+
+export main;
+
+main() {
+    moutf(greeting "ptr");
+    bits32[counter] = 100;
+    moutf("counter = %d\n", bits32[counter]);
+    mexit(0);
+}
