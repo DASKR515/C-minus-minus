@@ -17,10 +17,8 @@
 
 ---
 ## Quick Links
-
-- 🧮 [cmmath history ](https://github.com/DASKR515/C-minus-minus/blob/main/example/ReadmeMath.md)
-- 📖 [Examples Wiki Math ](https://github.com/DASKR515/C-minus-minus/blob/main/example/Readme.md)
-- 📚 [stdc--.h Wiki](https://github.com/DASKR515/C-minus-minus/blob/main/stdc--.h/Readme.md)
+- 📚 [Wiki](https://github.com/DASKR515/C-minus-minus/tree/main/example)
+- 📖 [Examples Wiki Math ](https://github.com/DASKR515/C-minus-minus/blob/main/example-cmmath/example/ReadmeMath.md)
 - ⚡ [gmm Releases](https://github.com/DASKR515/C-minus-minus/releases)
 - 🔬 [Why GHC?](https://github.com/DASKR515/C-minus-minus/tree/main/whyGHC)
 
