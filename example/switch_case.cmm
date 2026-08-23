@@ -1,0 +1,23 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits32 x;
+    x = 2;
+
+    switch (x) {
+        case 1: {
+            moutf("one\n");
+        }
+        case 2: {
+            moutf("two\n");
+        }
+        default: {
+            moutf("other\n");
+        }
+    }
+
+    mexit(0);
+}
