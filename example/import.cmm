@@ -1,0 +1,12 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+import "C" printf;
+import "C" exit;
+
+export main;
+
+main() {
+    foreign "C" printf("printed after explicit import\n");
+    foreign "C" exit(0);
+}
