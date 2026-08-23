@@ -200,6 +200,7 @@ An alternative, highly stable design pattern for floating-point calculations: co
 `cmmath.h` provides a comprehensive, unified mathematical toolkit designed specifically for C-- programs running via Foreign Function Interface (FFI). All API procedures operate on double-precision floating-point numbers (`double`/`float64`) and employ the standard `m` prefix convention. This abstraction layer enables robust mathematical processing while avoiding known native compiler limitations associated with direct Cmm floating-point operations.
 
 ---
+[example](https://github.com/DASKR515/C-minus-minus/tree/main/example-cmmath/example)
 
 ## Basic Arithmetic Operations
 
