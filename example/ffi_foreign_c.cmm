@@ -1,0 +1,11 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    foreign "C" printf("value from libc printf: %d\n", 99);
+    ffi printf("value from libc printf: %d\n", 99);
+//or
+    mexit(0);
+}
