@@ -1,0 +1,22 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits32 score;
+
+    score = 75;
+
+    if (score >= 90) {
+        moutf("grade: A\n");
+    } else {
+        if (score >= 70) {
+            moutf("grade: B\n");
+        } else {
+            moutf("grade: C\n");
+        }
+    }
+
+    mexit(0);
+}
