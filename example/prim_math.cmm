@@ -1,0 +1,23 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    float64 x;
+    float64 r;
+
+    x = 16.0;
+    (r) = prim %sqrt64f(x);
+    moutf("sqrt(16) = %f\n", r);
+
+    x = 2.718281828;
+    (r) = prim %log64f(x);
+    moutf("log(e) = %f\n", r);
+
+    x = 0.0;
+    (r) = prim %sin64f(x);
+    moutf("sin(0) = %f\n", r);
+
+    mexit(0);
+}
