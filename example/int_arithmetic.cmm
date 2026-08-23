@@ -1,0 +1,20 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits32 a;
+    bits32 b;
+// I64 I32 
+// example I32 a;
+    a = 17;
+    b = 5;
+
+    moutf("add = %d\n", a + b);
+    moutf("sub = %d\n", a - b);
+    moutf("mul = %d\n", a * b);
+    moutf("div = %d\n", a / b);
+    moutf("mod = %d\n", a % b);
+    mexit(0);
+}
