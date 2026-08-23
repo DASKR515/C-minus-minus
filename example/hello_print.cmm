@@ -1,0 +1,26 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    moutf("Hello, Cmm!\n");
+    mexit(0);
+}
+
+
+
+// or 
+
+#include "Cmm.h"
+#include "stdc--.h"
+section "data" { msg: bits[] "Hello, Cmm!\n"; }
+export main;
+
+main() {
+    mout(msg "ptr" );
+    mexit(0);
+}
+
+
+w
