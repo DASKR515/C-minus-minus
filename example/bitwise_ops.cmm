@@ -1,0 +1,21 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits32 a;
+    bits32 b;
+
+    a = 12;
+    b = 10;
+
+    moutf("and = %d\n", a & b);
+    moutf("or = %d\n", a | b);
+    moutf("xor = %d\n", a ^ b);
+    moutf("not = %d\n", ~a);
+    moutf("shl = %d\n", a << 2);
+    moutf("shr = %d\n", a >> 2);
+
+    mexit(0);
+}
