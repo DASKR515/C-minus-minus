@@ -1,0 +1,24 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+section "bss" { result: W_; }
+
+export main;
+export addOne;
+export finish;
+
+addOne(W_ x) {
+    W_[result] = x + 1;
+    jump finish [];
+}
+
+finish() {
+    moutf("result = %d\n", W_[result]);
+    mexit(0);
+}
+
+main() {
+    W_ n;
+    n = 5;
+    jump addOne(n);
+}
