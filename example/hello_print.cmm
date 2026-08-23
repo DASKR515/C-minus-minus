@@ -14,7 +14,7 @@ main() {
 
 #include "Cmm.h"
 #include "stdc--.h"
-section "data" { msg: bits[] "Hello, Cmm!\n"; }
+section "data" { msg: bits8[] "Hello, Cmm!\n"; }
 export main;
 
 main() {
