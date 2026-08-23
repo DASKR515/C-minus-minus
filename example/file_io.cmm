@@ -1,0 +1,18 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+section "data" { path: bits8[] "output.txt\0"; }
+section "data" {  mode: bits8[] "w\0"; }
+section "data" { text: bits8[] "written from Cmm\n\0"; }
+export main;
+
+main() {
+    bits64 f;
+
+    (f) = mopen(path "ptr", mode "ptr");
+    fmout(f, text "ptr");
+    mclose(f);
+
+    moutf("file written successfully\n");
+    mexit(0);
+}
