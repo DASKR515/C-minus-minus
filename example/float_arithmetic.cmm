@@ -1,0 +1,27 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    float64 a;
+    float64 b;
+    float64 r;
+
+    a = 5.5;
+    b = 3.2;
+
+    r = %fadd(a, b);
+    moutf("add = %f\n", r);
+
+    r = %fsub(a, b);
+    moutf("sub = %f\n", r);
+
+    r = %fmul(a, b);
+    moutf("mul = %f\n", r);
+
+    r = %fquot(a, b);
+    moutf("div = %f\n", r);
+
+    mexit(0);
+}
