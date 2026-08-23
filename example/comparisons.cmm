@@ -1,0 +1,27 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits32 a;
+    bits32 b;
+
+    a = 10;
+    b = 20;
+
+    if (a < b) {
+        moutf("a < b is true\n");
+    }
+    if (a >= b) {
+        moutf("a >= b is true\n");
+    }
+    if (a != b) {
+        moutf("a != b is true\n");
+    }
+    if (a == a) {
+        moutf("a == a is true\n");
+    }
+
+    mexit(0);
+}
