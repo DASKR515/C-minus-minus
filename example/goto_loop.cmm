@@ -1,0 +1,18 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+export main;
+
+main() {
+    bits32 i;
+    i = 1;
+
+loop_start:
+    if (i <= 5) {
+        moutf("i = %d\n", i);
+        i = i + 1;
+        goto loop_start;
+    }
+
+    mexit(0);
+}
