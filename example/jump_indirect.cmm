@@ -1,0 +1,17 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+section "bss" { target: W_; }
+
+export main;
+export sayHi;
+
+sayHi() {
+    moutf("hi from indirect jump\n");
+    mexit(0);
+}
+
+main() {
+    W_[target] = sayHi;
+    jump W_[target] [];
+}
