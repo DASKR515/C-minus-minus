@@ -1,0 +1,227 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "cmmx11.h"
+section "bss" { dpy: bits64; }
+section "bss" { root: bits64; }
+section "bss" { win: bits64; }
+section "bss" { child_win: bits64; }
+section "bss" { scr: bits32; }
+
+section "bss" { disp_w: bits32; }
+section "bss" { disp_h: bits32; }
+section "bss" { black_pix: bits64; }
+section "bss" { white_pix: bits64; }
+
+section "bss" { ev: bits64; }
+section "bss" { ev_type: bits32; }
+section "bss" { click_x: bits32; }
+section "bss" { click_y: bits32; }
+section "bss" { mouse_btn: bits32; }
+section "bss" { key_code: bits32; }
+section "bss" { is_clicked: bits32; }
+
+section "bss" { gc: bits64; }
+section "bss" { pixmap: bits64; }
+
+section "bss" { font_struct: bits64; }
+section "bss" { text_width: bits32; }
+section "bss" { wm_delete_atom: bits64; }
+section "bss" { custom_cursor: bits64; }
+
+section "bss" { key_buf: bits8[32]; }
+section "bss" { keysym_res: bits64; }
+
+section "data" { title_initial: bits8[] "X11 Cmm Full Test Suite\0"; }
+section "data" { font_name: bits8[] "fixed\0"; }
+section "data" { atom_name: bits8[] "WM_DELETE_WINDOW\0"; }
+
+section "data" { msg_start: bits8[] "[Cmm] Starting X11 full primitives test...\0"; }
+section "data" { msg_disp_info: bits8[] "[Cmm] Connected to X Server. Screen Info:\0"; }
+section "data" { msg_click: bits8[] "[Cmm] Button Clicked inside Test Zone!\0"; }
+section "data" { msg_key: bits8[] "[Cmm] Key Pressed! Exiting...\0"; }
+
+section "data" { label_draw: bits8[] "Cmm Primitive Drawing (Line, Rect, Arc)\0"; }
+section "data" { label_btn: bits8[] "Click Me\0"; }
+
+export main;
+
+main() {
+    bits64 dpy_val;
+    bits64 win_val;
+    bits64 root_val;
+    bits64 gc_val;
+    bits64 pix_val;
+    bits64 font_val;
+    bits64 ev_val;
+    
+    bits32 scr_val;
+    bits32 type_val;
+    bits32 click_val;
+
+    mout(msg_start "ptr");
+    mout("\n\0" "ptr");
+
+    mXOpenDisplay(dpy, 0);
+    dpy_val = bits64[dpy];
+
+    if (dpy_val == 0) goto err_display;
+    goto disp_ok;
+
+err_display:
+    mout("Failed to open X Display!\n\0" "ptr");
+    mexit(1);
+
+disp_ok:
+    mXDefaultScreen(scr, dpy);
+    scr_val = bits32[scr];
+    
+    mXDefaultRootWindow(root, dpy);
+    root_val = bits64[root];
+
+    mXBlackPixel(black_pix, dpy, scr_val);
+    mXWhitePixel(white_pix, dpy, scr_val);
+    mXDisplayWidth(disp_w, dpy, scr_val);
+    mXDisplayHeight(disp_h, dpy, scr_val);
+
+    mout(msg_disp_info "ptr");
+    mout(" Width: \0" "ptr");
+    mprint_int(bits32[disp_w]);
+    mout(" Height: \0" "ptr");
+    mprint_int(bits32[disp_h]);
+    mout("\n\0" "ptr");
+
+    mXCreateSimpleWindow(win, dpy, root, 50, 50, 600, 400, 2, bits64[black_pix], bits64[white_pix]);
+    win_val = bits64[win];
+
+    mXCreateSimpleWindow(child_win, dpy, win, 480, 20, 100, 50, 1, bits64[black_pix], 13421772);
+
+    mXSetWindowTitle(dpy, win, title_initial "ptr");
+    mXMoveResizeWindow(dpy, win, 100, 100, 640, 480);
+
+    mXInternAtom(wm_delete_atom, dpy, atom_name "ptr", 0);
+    mXSetWMProtocols(dpy, win, wm_delete_atom, 1);
+
+    mXLoadQueryFont(font_struct, dpy, font_name "ptr");
+    font_val = bits64[font_struct];
+    if (font_val == 0) goto skip_font_width;
+    mXTextWidth(text_width, font_struct, label_draw "ptr");
+
+skip_font_width:
+    mXCreateFontCursor(custom_cursor, dpy, 58);
+    mXDefineCursor(dpy, win, custom_cursor);
+
+    mXCreateGC(gc, dpy, win);
+    gc_val = bits64[gc];
+
+    if (font_val == 0) goto skip_font_gc;
+    mXSetFont(dpy, gc, font_struct);
+
+skip_font_gc:
+    mXCreatePixmap(pixmap, dpy, win, 200, 100, 24);
+    pix_val = bits64[pixmap];
+
+    if (pix_val == 0) goto skip_pixmap_draw;
+    mXSetForeground(dpy, gc, 65280);
+    mXFillRectangle(dpy, pixmap, gc, 0, 0, 200, 100);
+
+skip_pixmap_draw:
+
+    mXSelectInput(dpy, win, 32771);
+    mXMapWindow(dpy, win);
+    mXMapWindow(dpy, child_win);
+
+    mXAllocEvent(ev);
+    ev_val = bits64[ev];
+
+event_loop:
+    mXNextEvent(dpy, ev);
+    mXGetEventType(ev_type, ev);
+    type_val = bits32[ev_type];
+
+    if (type_val == 12) goto do_expose;
+    if (type_val == 4) goto do_button;
+    if (type_val == 2) goto do_key;
+
+    goto event_loop;
+
+do_expose:
+    mXSetForeground(dpy, gc, bits64[black_pix]);
+    mXDrawString(dpy, win, gc, 30, 40, label_draw "ptr");
+
+    mXSetLineWidth(dpy, gc, 2);
+    mXSetForeground(dpy, gc, 16711680);
+    mXDrawLine(dpy, win, gc, 30, 60, 300, 60);
+
+    mXSetForeground(dpy, gc, 255);
+    mXDrawRectangle(dpy, win, gc, 30, 80, 100, 60);
+    
+    mXSetForeground(dpy, gc, 32768);
+    mXFillRectangle(dpy, win, gc, 150, 80, 100, 60);
+
+    mXSetForeground(dpy, gc, 16711935);
+    mXFillArc(dpy, win, gc, 270, 80, 60, 60, 0, 23040);
+
+    mXDrawButtonFrame(dpy, win, 30, 200, 120, 40, 14540253, bits64[black_pix]);
+    mXSetForeground(dpy, gc, bits64[black_pix]);
+    mXDrawString(dpy, win, gc, 55, 225, label_btn "ptr");
+
+    if (pix_val == 0) goto skip_copy_area;
+    mXCopyArea(dpy, pixmap, win, gc, 0, 0, 200, 100, 30, 280);
+
+skip_copy_area:
+    mXFlush(dpy);
+    goto event_loop;
+
+do_button:
+    mXGetButtonCoordinates(click_x, click_y, ev);
+    mXGetPointerButton(mouse_btn, ev);
+
+    mXIsButtonClicked(is_clicked, ev, 30, 200, 120, 40);
+    click_val = bits32[is_clicked];
+
+    if (click_val == 0) goto event_loop;
+
+    mout(msg_click "ptr");
+    mout(" (X: \0" "ptr");
+    mprint_int(bits32[click_x]);
+    mout(" Y: \0" "ptr");
+    mprint_int(bits32[click_y]);
+    mout(")\n\0" "ptr");
+
+    mXSetForeground(dpy, gc, 16711680);
+    mXDrawPoint(dpy, win, gc, bits32[click_x], bits32[click_y]);
+    mXFlush(dpy);
+
+    goto event_loop;
+
+do_key:
+    mXGetKeyCode(key_code, ev);
+    mXLookupString(key_buf, keysym_res, ev, 32);
+
+    mout(msg_key "ptr");
+    mout(" Key Code: \0" "ptr");
+    mprint_int(bits32[key_code]);
+    mout("\n\0" "ptr");
+
+    goto cleanup;
+
+cleanup:
+    mout("[Cmm] Cleaning resources and shutting down...\n\0" "ptr");
+
+    if (pix_val == 0) goto skip_free_pixmap;
+    mXFreePixmap(dpy, pixmap);
+
+skip_free_pixmap:
+    if (font_val == 0) goto skip_free_font;
+    mXFreeFont(dpy, font_struct);
+
+skip_free_font:
+    mXFreeCursor(dpy, custom_cursor);
+    mXFreeGC(dpy, gc);
+    mXDestroyWindow(dpy, child_win);
+    mXDestroyWindow(dpy, win);
+    mXFreeEvent(ev);
+    mXCloseDisplay(dpy);
+
+    mexit(0);
+}
