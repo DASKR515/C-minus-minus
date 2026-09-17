@@ -1,0 +1,42 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "file.h"
+
+section "data" {
+    filename: bits8[] "output.txt\0";
+}
+section "data" {
+    mode_w: bits8[] MODE_WRITE;
+}
+section "data" {
+    content: bits8[] "Hello from DASKR C-- Engine\n\0";
+}
+section "data" {
+    int_fmt: bits8[] "User Count: %d\n\0";
+}
+section "data" {
+    success_msg: bits8[] "Done.\0";
+}
+
+export main;
+main() {
+    W_ file_handle;
+    W_ user_count;
+
+    user_count = 15;
+
+
+    (file_handle) = mopen(filename "ptr", mode_w "ptr");
+
+    ASSERT_FILE(file_handle);
+
+    fmout(content "ptr", file_handle);
+
+    fmoutf(file_handle, int_fmt "ptr", user_count);
+
+    mclose(file_handle);
+
+    mout(success_msg "ptr");
+    
+    mexit(0);
+}
