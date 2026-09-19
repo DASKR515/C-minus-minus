@@ -6,11 +6,11 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 #include <stdlib.h>
-#include <string.h
+#include <string.h>
 #include <stdio.h>
 
 void mXOpenDisplay(void* result, const char* name) {
-    Display* dpy = XOpenDisplay(name);a
+    Display* dpy = XOpenDisplay(name);
     memcpy(result, &dpy, sizeof(dpy));
 }
 
