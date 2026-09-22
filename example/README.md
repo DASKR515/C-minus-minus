@@ -57,18 +57,30 @@ The simplest possible program. `moutf` is a shortcut from `stdc--.h` for `printf
 
 ## 2. Data Types and Variables
 
-Unlike languages like C, Cmm has no generic `int` type. Every type is explicitly declared by its bit-width:
+Unlike languages like C, Cmm has no generic `int` type. Every type is explicitly declared by its bit-width or architecture macro:
 
-| Type | Size | Description |
+| Type / Macro | Size | Description |
 | --- | --- | --- |
-| `bits8` | 8 bits | Small integer or character |
-| `bits16` | 16 bits | Medium integer |
-| `bits32` | 32 bits | Standard integer (like `int` in C) |
-| `bits64` | 64 bits | Large integer |
+| `bits8` | 8 bits | Small integer, byte, or ASCII character |
+| `bits16` | 16 bits | Medium 16-bit integer |
+| `bits32` | 32 bits | Standard 32-bit integer |
+| `bits64` | 64 bits | Large 64-bit integer |
 | `float32` | 32 bits | Single-precision floating-point |
-| `float64` | 64 bits | Double-precision floating-point (like `double`) |
+| `float64` | 64 bits | Double-precision floating-point (like `double` in C) |
 | `gcptr` | Machine native | Managed garbage-collection pointer |
 | `W_` | 32 or 64 bits | Native CPU word size (automatically adjusts per architecture) |
+| `L_` | 32 or 64 bits | Native long integer alias (matches target word size) |
+| `F_` | 32 bits | Native single-precision float alias (`float32`) |
+| `D_` | 64 bits | Native double-precision float alias (`float64`) |
+| `P_` | 32 or 64 bits | Native raw memory pointer alias |
+| `I8` | 8 bits | Short alias for `bits8` |
+| `I16` | 16 bits | Short alias for `bits16` |
+| `I32` | 32 bits | Short alias for `bits32` |
+| `I64` | 64 bits | Short alias for `bits64` |
+| `CInt` | 32 bits | C FFI compatibility type for standard C `int` |
+| `CLong` | 32 or 64 bits | C FFI compatibility type for C `long` |
+| `CChar` | 8 bits | C FFI compatibility type for C `char` |
+| `CSize` | 32 or 64 bits | C FFI compatibility type for C `size_t` |
 
 Variable types must be declared first, followed by value assignment on a separate line — combined declaration and initialization is not supported.
 
