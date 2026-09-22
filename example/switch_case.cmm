@@ -1,6 +1,10 @@
 #include "Cmm.h"
 #include "stdc--.h"
 
+section "data" { fmt_one:   bits8[] "one\n\0"; }
+section "data" { fmt_two:   bits8[] "two\n\0"; }
+section "data" { fmt_other: bits8[] "other\n\0"; }
+
 export main;
 
 main() {
@@ -9,15 +13,19 @@ main() {
 
     switch (x) {
         case 1: {
-            moutf("one\n");
+            moutf(fmt_one);
+            goto exit_switch;
         }
         case 2: {
-            moutf("two\n");
+            moutf(fmt_two);
+            goto exit_switch;
         }
         default: {
-            moutf("other\n");
+            moutf(fmt_other);
+            goto exit_switch;
         }
     }
 
+exit_switch:
     mexit(0);
 }
