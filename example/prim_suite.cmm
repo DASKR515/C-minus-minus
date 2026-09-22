@@ -1,0 +1,196 @@
+#include "Cmm.h"
+#include "stdc--.h"
+
+/*
+ * ============================================================================
+ *  GMM / C-- NCG STRESS & VALIDATION SUITE
+ *  by JABIR AKA DASKR
+ * ============================================================================
+ *  NOTE: This suite was authored after extensive trial and error with the GHC 
+ *  Native Code Generator (NCG), specifically addressing floating-point 
+ *  evaluations and unsupported backend primops.
+ * 
+ *  This serves as a full-coverage stress test to extract maximum execution 
+ *  capabilities from the x86_64 NCG without relying on the Haskell 
+ *  Runtime System (RTS).
+ * ============================================================================
+ */
+
+// ============================================================================
+// DATA & BSS SECTIONS
+// ============================================================================
+section "data" { fmt_head: bits8[] "\n=== TEST: %s ===\n\0"; }
+section "data" { fmt_int:  bits8[] "Int  Result = %ld\n\0"; }
+section "data" { fmt_flt:  bits8[] "Float Result = %f\n\0"; }
+section "data" { fmt_cast: bits8[] "Bitcast Raw  = %f\n\0"; }
+section "data" { fmt_str:  bits8[] "String Buf   = %s\n\0"; }
+
+section "data" { t1_name: bits8[] "Conversions & Extensions\0"; }
+section "data" { t2_name: bits8[] "64-bit Math Primops\0"; }
+section "data" { t3_name: bits8[] "32-bit Math Primops\0"; }
+section "data" { t4_name: bits8[] "Memory Primops\0"; }
+
+section "data" { src_buf: bits8[] "GMM Core Test Buffer\0"; }
+section "data" { dst_buf: bits8[64]; }
+
+section "bss"  { bitcast_slot: bits64; }
+
+// ============================================================================
+// TOP-LEVEL EXPORTS
+// ============================================================================
+export main;
+export test_conversions;
+export test_math64_primops;
+export test_math32_primops;
+export test_mem_primops;
+
+// ============================================================================
+// MAIN ENTRY POINT
+// ============================================================================
+main() {
+    jump test_conversions(100);
+}
+
+// ============================================================================
+// 1. ALL CONVERSIONS & EXTENSIONS
+// ============================================================================
+test_conversions(bits64 val) {
+    float64 f64_conv;
+    float64 f64_cast;
+    float32 f32_v;
+    bits32  i32_v;
+    bits64  res_i;
+
+    moutf(fmt_head "ptr", t1_name);
+
+    // Actual Type Conversions
+    f64_conv = %i2f64(val);
+    f32_v    = %i2f32(val);
+
+    res_i    = %f2i64(f64_conv);
+    i32_v    = %f2i32(f32_v);
+
+    // Precision Truncation / Extension
+    f32_v    = %f2f32(f64_conv);
+    f64_conv = %f2f64(f32_v);
+
+    // Memory Bitcasting (Reinterpreting IEEE bits)
+    bits64[bitcast_slot] = val;
+    f64_cast = float64[bitcast_slot];
+
+    // Extensions & Truncations
+    res_i = %zx16(val);
+    res_i = %zx32(val);
+    res_i = %sx16(val);
+    res_i = %sx32(val);
+    res_i = %lobits8(val);
+    res_i = %lobits16(val);
+    res_i = %lobits32(val);
+
+    moutf(fmt_int "ptr", res_i);
+    moutf(fmt_flt "ptr", f64_conv);
+    moutf(fmt_cast "ptr", f64_cast);
+
+    jump test_math64_primops(16.0);
+}
+
+// ============================================================================
+// 2. ALL 64-BIT MATH PRIMOPS
+// ============================================================================
+test_math64_primops(float64 v) {
+    float64 r;
+
+    moutf(fmt_head "ptr", t2_name);
+
+    (r) = prim %sqrt64f(v);
+    (r) = prim %log64f(v);
+    (r) = prim %log1p64f(v);
+    (r) = prim %exp64f(v);
+    (r) = prim %expM164f(v);
+    (r) = prim %fabs64f(v);
+
+    // Trigonometric
+    (r) = prim %sin64f(v);
+    (r) = prim %cos64f(v);
+    (r) = prim %tan64f(v);
+    (r) = prim %asin64f(0.5);
+    (r) = prim %acos64f(0.5);
+    (r) = prim %atan64f(v);
+
+    // Hyperbolic
+    (r) = prim %sinh64f(v);
+    (r) = prim %cosh64f(v);
+    (r) = prim %tanh64f(v);
+    (r) = prim %asinh64f(v);
+    (r) = prim %acosh64f(2.0);
+
+    // Power
+    (r) = prim %pow64f(v, 2.0);
+
+    moutf(fmt_flt "ptr", r);
+
+    jump test_math32_primops(%f2f32(v));
+}
+
+// ============================================================================
+// 3. ALL 32-BIT MATH PRIMOPS
+// ============================================================================
+test_math32_primops(float32 v) {
+    float32 r;
+    float32 p_half;
+    float32 p_two;
+
+    moutf(fmt_head "ptr", t3_name);
+
+    p_half = %f2f32(0.5);
+    p_two  = %f2f32(2.0);
+
+    (r) = prim %sqrt32f(v);
+    (r) = prim %log32f(v);
+    (r) = prim %log1p32f(v);
+    (r) = prim %exp32f(v);
+    (r) = prim %expM132f(v);
+    (r) = prim %fabs32f(v);
+
+    // Trigonometric
+    (r) = prim %sin32f(v);
+    (r) = prim %cos32f(v);
+    (r) = prim %tan32f(v);
+    (r) = prim %asin32f(p_half);
+    (r) = prim %acos32f(p_half);
+    (r) = prim %atan32f(v);
+
+    // Hyperbolic
+    (r) = prim %sinh32f(v);
+    (r) = prim %cosh32f(v);
+    (r) = prim %tanh32f(v);
+    (r) = prim %asinh32f(v);
+    (r) = prim %acosh32f(p_two);
+
+    // Power
+    (r) = prim %pow32f(v, p_two);
+
+    moutf(fmt_flt "ptr", %f2f64(r));
+
+    jump test_mem_primops();
+}
+
+// ============================================================================
+// 4. MEMORY & BUFFER PRIMOPS
+// ============================================================================
+test_mem_primops() {
+    bits64 cmp_res;
+
+    moutf(fmt_head "ptr", t4_name);
+
+    prim %memset(dst_buf, 0, 64, 1);
+    prim %memcpy(dst_buf, src_buf, 20, 1);
+    prim %memmove(dst_buf, src_buf, 20, 1);
+
+    (cmp_res) = prim %memcmp(dst_buf, src_buf, 20, 1);
+
+    moutf(fmt_int "ptr", cmp_res);
+    moutf(fmt_str "ptr", dst_buf);
+
+    mexit(0);
+}
