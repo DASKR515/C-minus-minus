@@ -79,8 +79,6 @@ Unlike languages like C, Cmm has no generic `int` type. Every type is explicitly
 | `I64` | 64 bits | Short alias for `bits64` |
 | `CInt` | 32 bits | C FFI compatibility type for standard C `int` |
 | `CLong` | 32 or 64 bits | C FFI compatibility type for C `long` |
-| `CChar` | 8 bits | C FFI compatibility type for C `char` |
-| `CSize` | 32 or 64 bits | C FFI compatibility type for C `size_t` |
 
 Variable types must be declared first, followed by value assignment on a separate line — combined declaration and initialization is not supported.
 
