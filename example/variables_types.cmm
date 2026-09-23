@@ -1,26 +1,60 @@
 #include "Cmm.h"
 #include "stdc--.h"
 
+section "data" { fmt_int:   bits8[] "Int: %ld\n\0"; }
+section "data" { fmt_float: bits8[] "Float: %f\n\0"; }
+section "data" { fmt_str:   bits8[] "String: %s\n\0"; }
+section "data" { my_msg:    bits8[] "Hello from C--!\0"; }
+
 export main;
 
 main() {
-    bits8 a;
-    bits16 b;
-    bits32 c;
-    bits64 d;
-    float32 e;
-    float64 f;
-    W_ g;
-// and bits128 bitsXXX
-    a = 7;
-    b = 300;
-    c = 70000;
-    d = 5000000000;
-    e = 1.5;
-    f = 3.14159;
-    g = 42;
+    bits32 b_32;
+    bits64 b_8, b_16, b_64;
+    float32 f_32;
+    float64 f_64;
 
-    moutf("a=%d b=%d c=%d d=%ld\n", a, b, c, d);
-    moutf("e=%f f=%f g=%d\n", e, f, g);
+    W_    word_val;
+    L_    long_val;
+    P_    ptr_val;
+    gcptr gc_ptr;
+
+    I32   a_32;
+    I64   a_64;
+    F_    a_f;
+    D_    a_d;
+
+    CInt  c_int;
+    CLong c_long;
+    CLong c_size; // Used native CLong instead of CSize
+    b_8  = 10;
+    b_16 = 1000;
+    b_32 = 100000;
+    b_64 = 10000000000;
+
+    f_32 = %f2f32(3.14);
+    f_64 = 2.7182818;
+
+    word_val = 64;
+    long_val = 128;
+    ptr_val  = my_msg;
+    gc_ptr   = my_msg;
+
+    a_32 = 32;
+    a_64 = 64;
+    a_f  = %f2f32(1.5);
+    a_d  = 9.99;
+
+    c_int  = 42;
+    c_long = 999;
+    c_size = 512;
+
+    // Output Verification
+    moutf(fmt_int, %zx32(b_32));
+    moutf(fmt_int, b_64);
+    moutf(fmt_float, f_64);
+    moutf(fmt_str, ptr_val);
+    moutf(fmt_int, %sx32(c_int));
+
     mexit(0);
 }
