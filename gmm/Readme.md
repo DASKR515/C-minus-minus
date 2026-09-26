@@ -8,7 +8,7 @@
 
 **A standalone toolchain, project builder, and runner for writing and compiling C-- (Cmm) without the GHC Haskell Runtime System.**
 
-`gmm` wraps GHC's Cmm front-end and a plain system linker to produce native binaries that are free of the Haskell RTS — no `stg_*` symbols, no `libHSrts`, and no multi-megabyte "Hello World" binaries. It ships with `libgmm/`, a bundled standard-library layer (`stdc--.h v2.0.0`, `cmmath.h`) embedded directly into the `gmm` binary and extracted automatically at runtime, requiring no manual installation or header configuration.
+`gmm` wraps GHC's Cmm front-end and a plain system linker to produce native binaries that are free of the Haskell RTS — no `stg_*` symbols, no `libHSrts`, and no multi-megabyte "Hello World" binaries. It ships with `libgmm/`, a bundled standard-library layer (`stdc--.h v3.0.0`, `cmmath.h`) embedded directly into the `gmm` binary and extracted automatically at runtime, requiring no manual installation or header configuration.
 
 ```bash
 gmm -o app main.cmm
@@ -25,7 +25,7 @@ C-- (pronounced "C minus minus", written as **Cmm** in GHC's own tooling) is a l
 
 That original, compiler-agnostic version of C-- never really took off outside its own research project (Quick C--, abandoned around 2013). What *did* survive is a fork of it: **Cmm**, the intermediate representation GHC uses internally to compile Haskell down to machine code. GHC turns Haskell into Core, then STG, then Cmm, and from Cmm it can generate native assembly directly, hand off to LLVM, or (historically) emit plain C.
 
-A minimal Cmm program using `stdc--.h` v2.0.0 looks like this:
+A minimal Cmm program using `stdc--.h` v3.0.0 looks like this:
 
 ```c
 #include "Cmm.h"
