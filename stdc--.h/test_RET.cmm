@@ -1,0 +1,76 @@
+#include "Cmm.h"
+#include "stdc--.h"
+#include "ret.h"
+
+section "data" {
+    fmt_res: bits8[] "Final Output from A20 = %d\n\0";
+}
+
+
+fnc_a(A20, bits32 val) {
+    moutf(fmt_res "ptr", val);
+    mexit(0);
+}
+
+fnc_a(cont_a20, bits32 val) { ret_v(); }
+fnc_a(A19, bits32 val) { mall(A20, cont_a20, val + 19); }
+
+fnc_a(cont_a19, bits32 val) { ret_v(); }
+fnc_a(A18, bits32 val) { mall(A19, cont_a19, val + 18); }
+
+fnc_a(cont_a18, bits32 val) { ret_v(); }
+fnc_a(A17, bits32 val) { mall(A18, cont_a18, val + 17); }
+
+fnc_a(cont_a17, bits32 val) { ret_v(); }
+fnc_a(A16, bits32 val) { mall(A17, cont_a17, val + 16); }
+
+fnc_a(cont_a16, bits32 val) { ret_v(); }
+fnc_a(A15, bits32 val) { mall(A16, cont_a16, val + 15); }
+
+fnc_a(cont_a15, bits32 val) { ret_v(); }
+fnc_a(A14, bits32 val) { mall(A15, cont_a15, val + 14); }
+
+fnc_a(cont_a14, bits32 val) { ret_v(); }
+fnc_a(A13, bits32 val) { mall(A14, cont_a14, val + 13); }
+
+fnc_a(cont_a13, bits32 val) { ret_v(); }
+fnc_a(A12, bits32 val) { mall(A13, cont_a13, val + 12); }
+
+fnc_a(cont_a12, bits32 val) { ret_v(); }
+fnc_a(A11, bits32 val) { mall(A12, cont_a12, val + 11); }
+
+fnc_a(cont_a11, bits32 val) { ret_v(); }
+fnc_a(A10, bits32 val) { mall(A11, cont_a11, val + 10); }
+
+fnc_a(cont_a10, bits32 val) { ret_v(); }
+fnc_a(A9, bits32 val) { mall(A10, cont_a10, val + 9); }
+
+fnc_a(cont_a9, bits32 val) { ret_v(); }
+fnc_a(A8, bits32 val) { mall(A9, cont_a9, val + 8); }
+
+fnc_a(cont_a8, bits32 val) { ret_v(); }
+fnc_a(A7, bits32 val) { mall(A8, cont_a8, val + 7); }
+
+fnc_a(cont_a7, bits32 val) { ret_v(); }
+fnc_a(A6, bits32 val) { mall(A7, cont_a7, val + 6); }
+
+fnc_a(cont_a6, bits32 val) { ret_v(); }
+fnc_a(A5, bits32 val) { mall(A6, cont_a6, val + 5); }
+
+fnc_a(cont_a5, bits32 val) { ret_v(); }
+fnc_a(A4, bits32 val) { mall(A5, cont_a5, val + 4); }
+
+fnc_a(cont_a4, bits32 val) { ret_v(); }
+fnc_a(A3, bits32 val) { mall(A4, cont_a4, val + 3); }
+
+fnc_a(cont_a3, bits32 val) { ret_v(); }
+fnc_a(A2, bits32 val) { mall(A3, cont_a3, val + 2); }
+
+fnc_a(cont_a2, bits32 val) { ret_v(); }
+fnc_a(A1, bits32 val) { mall(A2, cont_a2, val + 1); }
+
+fnc_a(cont_main, bits32 val) { mexit(0); }
+
+main() {
+    mall(A1, cont_main, 0);
+}
