@@ -30,7 +30,7 @@
 
 #pragma once
 #include "Cmm.h"
-
+#include "ret.h"
 #define ffi           foreign "C" 
 
 #define mget_stdin()           foreign "C" fdopen(0, "r\0")
@@ -235,12 +235,8 @@
 
 #define msignal(sig, handler)    foreign "C" signal(sig, handler)
 #define mraise(sig)              foreign "C" raise(sig)
-/*
-problem 
-#define mcheck(cond)             
-#define massert(msg, file, line) foreign "C" abort()
-*/
-#define POP() foreign "C" printf("pop is badboy\n")
+
+#define rust() foreign "C" printf("RUST is bad\n")
 
 #define mfeclearexcept(flags)       foreign "C" feclearexcept(flags)
 #define mfetestexcept(flags)        foreign "C" fetestexcept(flags)
@@ -305,9 +301,15 @@ problem
 
 #define MODE_WRITE "w\0"
 #define MODE_READ  "r\0"
+// Safe Assertions
+#define massert(cond, msg) \
+    if ((cond) == 0) { \
+        foreign "C" puts(msg); \
+        foreign "C" exit(1); \
+    }
 
 #define ASSERT_FILE(ptr) \
-    if (ptr == 0) { \
-        foreign "C" puts("Error: File!\0" "ptr"); \
-        return (1); \
+    if ((ptr) == 0) { \
+        foreign "C" puts("Error: File handle is NULL!\0"); \
+        foreign "C" exit(1); \
     }
