@@ -1,3 +1,5 @@
+// doc ret.h = https://github.com/DASKR515/C-minus-minus/blob/main/stdc--.h/RET.md
+
 #ifndef CMM_RET_H
 #define CMM_RET_H
 
