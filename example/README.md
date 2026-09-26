@@ -25,29 +25,6 @@ cc app.o -o app -lm -lc
 
 ---
 
-## Table of Examples
-
-| # | File | Topic |
-| --- | --- | --- |
-| 1 | `01_hello_print.cmm` | Simple text printing |
-| 2 | `02_variables_types.cmm` | Data types and variables |
-| 3 | `03_int_arithmetic.cmm` | Integer arithmetic operations |
-| 4 | `04_float_arithmetic.cmm` | Floating-point arithmetic operations |
-| 5 | `05_comparisons.cmm` | Comparison operations |
-| 6 | `06_bitwise_ops.cmm` | Bitwise operations |
-| 7 | `07_conversions.cmm` | Type conversions |
-| 8 | `08_if_else.cmm` | Conditionals |
-| 9 | `09_goto_loop.cmm` | Loops via goto |
-| 10 | `10_switch_case.cmm` | switch/case |
-| 11 | `11_jump_direct.cmm` | Control transfer between functions (jump) |
-| 12 | `12_jump_indirect.cmm` | Indirect function jump |
-| 13 | `13_foreign_c.cmm` | External C function calls |
-| 14 | `14_import.cmm` | Forward declaration of external functions |
-| 15 | `15_section_data_bss.cmm` | Static data and reserved memory definitions |
-| 16 | `16_prim_math.cmm` | Advanced built-in math primitives |
-| 17 | `17_string_handling.cmm` | String manipulation |
-| 18 | `18_file_io.cmm` | File input/output |
-| 19 | `19_dynamic_memory.cmm` | Dynamic memory allocation |
 
 ---
 
