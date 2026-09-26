@@ -1,11 +1,11 @@
 /*
               --    by JABIR aka <DASKR>      
               --    This stdc--.h file is a wrapper for C libraries for C-- . Almost all the names are invented by me, mostly as jokes trolling C++ (like cout, mout).
-              --    The main idea of the file is to save you from writing too much FFI boilerplate. The file is semi-stable,
+              --    The main idea of the file is to save you from writing too much FFI boilerplate. The file is stable,
               --    with continuous maintenance and new additions on the way. 
               --    As for math.h and the like, 
               --    they will be wrapped later but they're still experimental because they're too complex compared to the other libraries.
-              --    ver <2.0.0>
+              --    ver <3.0.0>
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀   
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠰⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⡄⠀⠀⠸⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -31,7 +31,9 @@
 #pragma once
 #include "Cmm.h"
 #include "ret.h"
+
 #define ffi           foreign "C" 
+#define C_ W_
 
 #define mget_stdin()           foreign "C" fdopen(0, "r\0")
 #define mout(str)              foreign "C" puts(str)
