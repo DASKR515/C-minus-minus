@@ -18,7 +18,9 @@ main() {
     L_    long_val;
     P_    ptr_val;
     gcptr gc_ptr;
-
+    C_ str_1;
+    str_1 = "hi\n\0";
+    moutf(str_1);
     I32   a_32;
     I64   a_64;
     F_    a_f;
