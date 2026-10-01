@@ -92,10 +92,6 @@ The `-no-hs-main` option tells GHC not to link the default Haskell runtime entry
 
 ---
 
-# ⚠️ The hidden cost of `-no-hs-main`: the RTS is still there
-
-`-no-hs-main` only removes GHC's default Haskell entry point. It does **not** stop GHC from statically linking the full Haskell Runtime System into your binary — stack management, thread scheduling, signal handling, all of it — even for a program that never touches Haskell.
-
 We measured this directly on a plain "Hello World" Cmm program:
 
 | Build method | Binary size | RTS symbols present? |
