@@ -18,7 +18,7 @@ main() {
     foreign "C" testx(x, s1 "ptr");
     foreign "C" testx(y, s2 "ptr");
 
-    madd(res, x, y);
+    madd(res, x, y, 0);
 
     r = float64[res];
 
