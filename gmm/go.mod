@@ -1,3 +1,5 @@
-module gmm
+module github.com/DASKR515/gmm
 
-go 1.24.4
+go 1.26.7
+
+require github.com/ulikunitz/xz v0.5.17
