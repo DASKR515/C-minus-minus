@@ -1,0 +1,330 @@
+{
+  "name": "cmm-language-support",
+  "displayName": "C-- (Cmm) Language Support",
+  "shortDescription": "Syntax highlighting, autocompletion and language intelligence for C-- (Cmm), GHC's native intermediate language.",
+  "description": "Full editor support for hand-written C-- (Cmm), the native intermediate representation of the Glasgow Haskell Compiler.\n\n- Registers Cmm as a first-class VS Code language (`.cmm` plus the bundled Cmm macro headers).\n- TextMate grammar covering sections, data declarations, procedures, labels, control flow, the `foreign \"C\"` FFI, primops (`%zx32`, `prim %sqrt64f`), pointer annotations (`\"ptr\"`) and the `%` modulo/primop ambiguity.\n- Language server with contextual autocompletion (locals, globals, procedures, labels, primops, C symbols and every `stdc--.h` / `cmmath.h` macro, including the macro's expansion), hover documentation, signature help, diagnostics tailored to Cmm's real foot-guns, go-to-definition, references, document links, folding and an outline.\n- One Run button that compiles the active file with `gmm` and runs the result, using the executable location you choose and the project's `conf.hmm` when it has one. Output goes to a terminal.",
+  "version": "0.1.0",
+  "publisher": "DASKR515",
+  "license": "BSD-2-Clause",
+  "icon": "logo.png",
+  "author": {
+    "name": "DASKR515"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DASKR515/C-minus-minus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DASKR515/C-minus-minus/issues"
+  },
+  "homepage": "https://github.com/DASKR515/C-minus-minus#readme",
+  "engines": {
+    "vscode": "^1.75.0",
+    "node": ">=18"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Linters",
+    "Snippets"
+  ],
+  "keywords": [
+    "cmm",
+    "c--",
+    "ghc",
+    "haskell",
+    "stg",
+    "rts",
+    "intermediate representation",
+    "codegen",
+    "gmm"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "The language server only reads source files and headers; it does not run any code."
+    }
+  },
+  "activationEvents": [
+    "onLanguage:cmm"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "cmm",
+        "aliases": [
+          "Cmm",
+          "Cmm",
+          "C--",
+          "cmm"
+        ],
+        "extensions": [
+          ".cmm"
+        ],
+        "filenames": [
+          "Cmm.h",
+          "stdc--.h",
+          "cmmath.h",
+          "ret.h",
+          "cmmx11.h"
+        ],
+        "filenamePatterns": [
+          "*.cmm.h"
+        ],
+        "firstLine": "^#\\s*include\\s*[\"<]Cmm\\.h[\">]",
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "cmm",
+        "scopeName": "source.cmm",
+        "path": "./syntaxes/cmm.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.cmm": "cmm"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "language": "cmm",
+        "path": "./snippets/cmm.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "C-- (Cmm)",
+      "properties": {
+        "cmm.gmmPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Location of the `gmm` executable. Accepts a full path (`/opt/gmm/bin/gmm`, `C:\\gmm\\bin\\gmm.exe`) or a bare command name resolved through `PATH`. Leave empty to search `PATH` and the usual install directories. Use **Cmm: Select gmm Executable…** to browse for it. Used by **Cmm: Run Cmm File**.",
+          "scope": "machine"
+        },
+        "cmm.build.args": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Extra flags passed to `gmm` when running, split the way a shell would honouring quotes. For example `-keep-obj`, `-llvm`, `-rts`, `-libs pthread,m`, `-D DEBUG`, `-I ./include`. See `gmm -h` for the full list.",
+          "scope": "machine"
+        },
+        "cmm.build.output": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Output binary name passed to `gmm -o` when running. Leave empty to use the `output=` from `conf.hmm` when the project has one, otherwise the name of the file being built.",
+          "scope": "machine"
+        },
+        "cmm.includePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Extra directories searched by the language server when resolving `#include \"...\"`, and when indexing the macros of Cmm headers such as `stdc--.h` and `cmmath.h`. `gmm` bundles these headers inside its own binary; pointing at the checkout (for example `gmm/libgmm`) gives the most accurate results.",
+          "scope": "resource"
+        },
+        "cmm.bundledStdlib": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "always",
+            "never"
+          ],
+          "enumDescriptions": [
+            "Offer the bundled stdc--.h / cmmath.h / ret.h macros only when the document includes the corresponding header.",
+            "Always offer the bundled macros, even when the header is not included.",
+            "Never offer the bundled macros."
+          ],
+          "default": "auto",
+          "description": "When the bundled Cmm macro libraries take part in autocompletion."
+        },
+        "cmm.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the Cmm language server."
+        },
+        "cmm.diagnostics.undeclaredVariables": {
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "warning",
+          "description": "Report identifiers used in an expression that are neither declared, imported, defined in another workspace .cmm file, nor provided by an indexed header."
+        },
+        "cmm.diagnostics.deadCode": {
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "warning",
+          "description": "Report statements that can never run because a `jump` (a non-returning tail call) precedes them in the same block."
+        },
+        "cmm.diagnostics.returnInMain": {
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "warning",
+          "description": "Report `return (...)` as the final statement of `main`, which can segfault in hand-written Cmm. Prefer `foreign \"C\" exit(0);` or `mexit(0);`."
+        },
+        "cmm.diagnostics.unknownPrimops": {
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "hint",
+          "description": "Report `%name` primitive operations that are not part of the known Cmm primop set."
+        },
+        "cmm.diagnostics.arity": {
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "hint",
+          "description": "Report calls that pass a different number of arguments than a known non-variadic macro or procedure expects."
+        },
+        "cmm.diagnostics.missingHeader": {
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "hint",
+          "description": "Report `#include \"...\"` directives whose header cannot be found in the workspace or in the configured include paths."
+        },
+        "cmm.diagnostics.missingSemicolon": {
+          "type": "string",
+          "enum": [
+            "off",
+            "hint",
+            "information",
+            "warning",
+            "error"
+          ],
+          "default": "hint",
+          "description": "Report statements that are not terminated with `;`."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "cmm.restartServer",
+        "title": "Restart Language Server",
+        "category": "Cmm"
+      },
+      {
+        "command": "cmm.run",
+        "title": "Run Cmm File",
+        "category": "Cmm",
+        "icon": "$(play)"
+      },
+      {
+        "command": "cmm.stop",
+        "title": "Stop Cmm Run",
+        "category": "Cmm",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "cmm.selectGmm",
+        "title": "Select gmm Executable…",
+        "category": "Cmm"
+      },
+      {
+        "command": "cmm.showAllMacros",
+        "title": "Show Cmm Macro Reference",
+        "category": "Cmm"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "cmm.run",
+          "when": "editorLangId == cmm",
+          "group": "navigation@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "cmm.restartServer",
+          "when": "editorLangId == cmm"
+        },
+        {
+          "command": "cmm.run",
+          "when": "editorLangId == cmm"
+        },
+        {
+          "command": "cmm.stop",
+          "when": "never"
+        },
+        {
+          "command": "cmm.selectGmm",
+          "when": "true"
+        },
+        {
+          "command": "cmm.showAllMacros",
+          "when": "true"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "compile": "node build.mjs --minify",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p server/tsconfig.json --noEmit",
+    "lint:grammar": "node scripts/validate-grammar.mjs",
+    "lint:diagnostics": "node scripts/validate-diagnostics.mjs",
+    "dump": "node scripts/dump.mjs",
+    "gen:stdlib": "node scripts/gen-stdlib.mjs",
+    "vscode:prepublish": "node build.mjs --minify",
+    "package": "vsce package --no-dependencies -o cmm-language-support-0.1.0.vsix",
+    "smoke": "node scripts/smoke.mjs",
+    "test:protocol": "node scripts/protocol-test.mjs",
+    "test": "npm run typecheck && npm run lint:grammar && npm run lint:diagnostics && npm run smoke && npm run test:protocol && npm run test:gmm && npm run test:load && npm run test:run",
+    "test:load": "node scripts/load-test.mjs",
+    "test:gmm": "node scripts/gmm-test.mjs",
+    "test:run": "node scripts/run-test.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.75.0",
+    "@vscode/vsce": "^2.24.0",
+    "esbuild": "^0.20.2",
+    "typescript": "^5.4.5",
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11",
+    "vscode-oniguruma": "^1.7.0",
+    "vscode-textmate": "^9.0.0",
+    "vscode-uri": "^3.2.0"
+  }
+}

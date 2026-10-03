@@ -1,0 +1,3660 @@
+{
+ "generatedFrom": "https://github.com/DASKR515/C-minus-minus",
+ "headers": [
+  {
+   "file": "stdc--.h",
+   "title": "stdc--.h",
+   "doc": "stdc--.h — C library wrappers",
+   "version": "3.0.0",
+   "relativePath": "gmm/libgmm/stdc--.h",
+   "macros": [
+    {
+     "name": "ffi",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\""
+    },
+    {
+     "name": "C_",
+     "params": [],
+     "variadic": false,
+     "expansion": "W_"
+    },
+    {
+     "name": "mget_stdin",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" fdopen(0, \"r\\0\")"
+    },
+    {
+     "name": "mout",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" puts(str)"
+    },
+    {
+     "name": "moutf",
+     "params": [],
+     "variadic": true,
+     "expansion": "foreign \"C\" printf(__VA_ARGS__)"
+    },
+    {
+     "name": "moutc",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" putchar(c)"
+    },
+    {
+     "name": "fmout",
+     "params": [
+      "stream",
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fputs(str, stream)"
+    },
+    {
+     "name": "fmoutc",
+     "params": [
+      "c",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fputc(c, stream)"
+    },
+    {
+     "name": "fmoutf",
+     "params": [
+      "stream"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" fprintf(stream, __VA_ARGS__)"
+    },
+    {
+     "name": "smoutf",
+     "params": [
+      "buf"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" sprintf(buf, __VA_ARGS__)"
+    },
+    {
+     "name": "snmoutf",
+     "params": [
+      "buf",
+      "n"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" snprintf(buf, n, __VA_ARGS__)"
+    },
+    {
+     "name": "vmoutf",
+     "params": [
+      "fmt",
+      "args"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" vprintf(fmt, args)"
+    },
+    {
+     "name": "vfmoutf",
+     "params": [
+      "stream",
+      "fmt",
+      "args"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" vfprintf(stream, fmt, args)"
+    },
+    {
+     "name": "vsmoutf",
+     "params": [
+      "buf",
+      "fmt",
+      "args"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" vsprintf(buf, fmt, args)"
+    },
+    {
+     "name": "vsnmoutf",
+     "params": [
+      "buf",
+      "n",
+      "fmt",
+      "args"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" vsnprintf(buf, n, fmt, args)"
+    },
+    {
+     "name": "min",
+     "params": [],
+     "variadic": true,
+     "expansion": "foreign \"C\" scanf(__VA_ARGS__)"
+    },
+    {
+     "name": "minc",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" getchar()"
+    },
+    {
+     "name": "mfinc",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fgetc(stream)"
+    },
+    {
+     "name": "mfin",
+     "params": [
+      "buf",
+      "n",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fgets(buf, n, stream)"
+    },
+    {
+     "name": "mfinf",
+     "params": [
+      "stream"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" fscanf(stream, __VA_ARGS__)"
+    },
+    {
+     "name": "sminf",
+     "params": [
+      "buf"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" sscanf(buf, __VA_ARGS__)"
+    },
+    {
+     "name": "vminf",
+     "params": [
+      "fmt",
+      "args"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" vscanf(fmt, args)"
+    },
+    {
+     "name": "vfminf",
+     "params": [
+      "stream",
+      "fmt",
+      "args"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" vfscanf(stream, fmt, args)"
+    },
+    {
+     "name": "vsminf",
+     "params": [
+      "buf",
+      "fmt",
+      "args"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" vsscanf(buf, fmt, args)"
+    },
+    {
+     "name": "mungetc",
+     "params": [
+      "c",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" ungetc(c, stream)"
+    },
+    {
+     "name": "mopen",
+     "params": [
+      "path",
+      "mode"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fopen(path, mode)"
+    },
+    {
+     "name": "mreopen",
+     "params": [
+      "path",
+      "mode",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" freopen(path, mode, stream)"
+    },
+    {
+     "name": "mclose",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fclose(stream)"
+    },
+    {
+     "name": "mflush",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fflush(stream)"
+    },
+    {
+     "name": "mremove",
+     "params": [
+      "path"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" remove(path)"
+    },
+    {
+     "name": "mrename",
+     "params": [
+      "old",
+      "new_"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" rename(old, new_)"
+    },
+    {
+     "name": "mtmpfile",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" tmpfile()"
+    },
+    {
+     "name": "mtmpname",
+     "params": [
+      "buf"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" tmpnam(buf)"
+    },
+    {
+     "name": "mread",
+     "params": [
+      "ptr",
+      "size",
+      "cnt",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fread(ptr, size, cnt, stream)"
+    },
+    {
+     "name": "mwrite",
+     "params": [
+      "ptr",
+      "size",
+      "cnt",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fwrite(ptr, size, cnt, stream)"
+    },
+    {
+     "name": "mseek",
+     "params": [
+      "stream",
+      "off",
+      "whence"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fseek(stream, off, whence)"
+    },
+    {
+     "name": "mtell",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" ftell(stream)"
+    },
+    {
+     "name": "mrewind",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" rewind(stream)"
+    },
+    {
+     "name": "mgetpos",
+     "params": [
+      "stream",
+      "pos"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fgetpos(stream, pos)"
+    },
+    {
+     "name": "msetpos",
+     "params": [
+      "stream",
+      "pos"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fsetpos(stream, pos)"
+    },
+    {
+     "name": "meof",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" feof(stream)"
+    },
+    {
+     "name": "merror",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" ferror(stream)"
+    },
+    {
+     "name": "mclearerr",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" clearerr(stream)"
+    },
+    {
+     "name": "mperror",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" perror(str)"
+    },
+    {
+     "name": "msetbuf",
+     "params": [
+      "stream",
+      "buf"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" setbuf(stream, buf)"
+    },
+    {
+     "name": "msetvbuf",
+     "params": [
+      "stream",
+      "buf",
+      "mode",
+      "size"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" setvbuf(stream, buf, mode, size)"
+    },
+    {
+     "name": "mnew",
+     "params": [
+      "size"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" malloc(size)"
+    },
+    {
+     "name": "mnewz",
+     "params": [
+      "cnt",
+      "size"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" calloc(cnt, size)"
+    },
+    {
+     "name": "mresize",
+     "params": [
+      "ptr",
+      "size"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" realloc(ptr, size)"
+    },
+    {
+     "name": "mfree",
+     "params": [
+      "ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" free(ptr)"
+    },
+    {
+     "name": "mexit",
+     "params": [
+      "code"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" exit(code)"
+    },
+    {
+     "name": "mabort",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" abort()"
+    },
+    {
+     "name": "mquick_exit",
+     "params": [
+      "code"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" quick_exit(code)"
+    },
+    {
+     "name": "matexit",
+     "params": [
+      "func"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atexit(func)"
+    },
+    {
+     "name": "mat_quick_exit",
+     "params": [
+      "func"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" at_quick_exit(func)"
+    },
+    {
+     "name": "mtoi",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atoi(str)"
+    },
+    {
+     "name": "mtol",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atol(str)"
+    },
+    {
+     "name": "mtoll",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atoll(str)"
+    },
+    {
+     "name": "mtof",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atof(str)"
+    },
+    {
+     "name": "mstrtol",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtol(str, end, base)"
+    },
+    {
+     "name": "mstrtoul",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtoul(str, end, base)"
+    },
+    {
+     "name": "mstrtoll",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtoll(str, end, base)"
+    },
+    {
+     "name": "mstrtoull",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtoull(str, end, base)"
+    },
+    {
+     "name": "mstrtof",
+     "params": [
+      "str",
+      "end"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtof(str, end)"
+    },
+    {
+     "name": "mstrtod",
+     "params": [
+      "str",
+      "end"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtod(str, end)"
+    },
+    {
+     "name": "mstrtold",
+     "params": [
+      "str",
+      "end"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtold(str, end)"
+    },
+    {
+     "name": "mrand",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" rand()"
+    },
+    {
+     "name": "msrand",
+     "params": [
+      "seed"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" srand(seed)"
+    },
+    {
+     "name": "mqsort",
+     "params": [
+      "base",
+      "cnt",
+      "size",
+      "cmp"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" qsort(base, cnt, size, cmp)"
+    },
+    {
+     "name": "mbsearch",
+     "params": [
+      "key",
+      "base",
+      "cnt",
+      "size",
+      "cmp"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" bsearch(key, base, cnt, size, cmp)"
+    },
+    {
+     "name": "mabs",
+     "params": [
+      "x"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" abs(x)"
+    },
+    {
+     "name": "mlabs",
+     "params": [
+      "x"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" labs(x)"
+    },
+    {
+     "name": "mllabs",
+     "params": [
+      "x"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" llabs(x)"
+    },
+    {
+     "name": "mdiv",
+     "params": [
+      "num",
+      "den"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" div(num, den)"
+    },
+    {
+     "name": "mldiv",
+     "params": [
+      "num",
+      "den"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" ldiv(num, den)"
+    },
+    {
+     "name": "mlldiv",
+     "params": [
+      "num",
+      "den"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" lldiv(num, den)"
+    },
+    {
+     "name": "mgetenv",
+     "params": [
+      "name"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" getenv(name)"
+    },
+    {
+     "name": "msetenv",
+     "params": [
+      "name",
+      "val",
+      "ovr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" setenv(name, val, ovr)"
+    },
+    {
+     "name": "munsetenv",
+     "params": [
+      "name"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" unsetenv(name)"
+    },
+    {
+     "name": "mputenv",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" putenv(str)"
+    },
+    {
+     "name": "msystem",
+     "params": [
+      "cmd"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" system(cmd)"
+    },
+    {
+     "name": "mmblen",
+     "params": [
+      "s",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mblen(s, n)"
+    },
+    {
+     "name": "mmbtowc",
+     "params": [
+      "pwc",
+      "s",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mbtowc(pwc, s, n)"
+    },
+    {
+     "name": "mwctomb",
+     "params": [
+      "s",
+      "wc"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wctomb(s, wc)"
+    },
+    {
+     "name": "mmbstowcs",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mbstowcs(dst, src, n)"
+    },
+    {
+     "name": "mwcstombs",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcstombs(dst, src, n)"
+    },
+    {
+     "name": "mstrcpy",
+     "params": [
+      "dst",
+      "src"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strcpy(dst, src)"
+    },
+    {
+     "name": "mstrncpy",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strncpy(dst, src, n)"
+    },
+    {
+     "name": "mmemcpy",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" memcpy(dst, src, n)"
+    },
+    {
+     "name": "mmemmove",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" memmove(dst, src, n)"
+    },
+    {
+     "name": "mstrcat",
+     "params": [
+      "dst",
+      "src"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strcat(dst, src)"
+    },
+    {
+     "name": "mstrncat",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strncat(dst, src, n)"
+    },
+    {
+     "name": "mstrcmp",
+     "params": [
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strcmp(a, b)"
+    },
+    {
+     "name": "mstrncmp",
+     "params": [
+      "a",
+      "b",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strncmp(a, b, n)"
+    },
+    {
+     "name": "mmemcmp",
+     "params": [
+      "a",
+      "b",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" memcmp(a, b, n)"
+    },
+    {
+     "name": "mstrcoll",
+     "params": [
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strcoll(a, b)"
+    },
+    {
+     "name": "mstrxfrm",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strxfrm(dst, src, n)"
+    },
+    {
+     "name": "mstrchr",
+     "params": [
+      "str",
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strchr(str, c)"
+    },
+    {
+     "name": "mstrrchr",
+     "params": [
+      "str",
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strrchr(str, c)"
+    },
+    {
+     "name": "mstrstr",
+     "params": [
+      "hay",
+      "needle"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strstr(hay, needle)"
+    },
+    {
+     "name": "mstrpbrk",
+     "params": [
+      "str",
+      "chars"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strpbrk(str, chars)"
+    },
+    {
+     "name": "mstrspn",
+     "params": [
+      "str",
+      "chars"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strspn(str, chars)"
+    },
+    {
+     "name": "mstrcspn",
+     "params": [
+      "str",
+      "chars"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strcspn(str, chars)"
+    },
+    {
+     "name": "mstrtok",
+     "params": [
+      "str",
+      "delim"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtok(str, delim)"
+    },
+    {
+     "name": "mmemchr",
+     "params": [
+      "ptr",
+      "c",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" memchr(ptr, c, n)"
+    },
+    {
+     "name": "mstrlen",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strlen(str)"
+    },
+    {
+     "name": "mstrerror",
+     "params": [
+      "errnum"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strerror(errnum)"
+    },
+    {
+     "name": "mmemset",
+     "params": [
+      "ptr",
+      "val",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" memset(ptr, val, n)"
+    },
+    {
+     "name": "mstrdup",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strdup(str)"
+    },
+    {
+     "name": "mtime",
+     "params": [
+      "t"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" time(t)"
+    },
+    {
+     "name": "mclock",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" clock()"
+    },
+    {
+     "name": "mdifftime",
+     "params": [
+      "t1",
+      "t0"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" difftime(t1, t0)"
+    },
+    {
+     "name": "mmktime",
+     "params": [
+      "tm"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mktime(tm)"
+    },
+    {
+     "name": "mstrftime",
+     "params": [
+      "buf",
+      "n",
+      "fmt",
+      "tm"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strftime(buf, n, fmt, tm)"
+    },
+    {
+     "name": "masctime",
+     "params": [
+      "tm"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" asctime(tm)"
+    },
+    {
+     "name": "mctime",
+     "params": [
+      "t"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" ctime(t)"
+    },
+    {
+     "name": "mgmtime",
+     "params": [
+      "t"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" gmtime(t)"
+    },
+    {
+     "name": "mlocaltime",
+     "params": [
+      "t"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" localtime(t)"
+    },
+    {
+     "name": "misalpha",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isalpha(c)"
+    },
+    {
+     "name": "misdigit",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isdigit(c)"
+    },
+    {
+     "name": "misalnum",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isalnum(c)"
+    },
+    {
+     "name": "misspace",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isspace(c)"
+    },
+    {
+     "name": "mispunct",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" ispunct(c)"
+    },
+    {
+     "name": "misupper",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isupper(c)"
+    },
+    {
+     "name": "mislower",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" islower(c)"
+    },
+    {
+     "name": "miscntrl",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" iscntrl(c)"
+    },
+    {
+     "name": "misprint",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isprint(c)"
+    },
+    {
+     "name": "misgraph",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isgraph(c)"
+    },
+    {
+     "name": "misblank",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isblank(c)"
+    },
+    {
+     "name": "misxdigit",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" isxdigit(c)"
+    },
+    {
+     "name": "mtoupper",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" toupper(c)"
+    },
+    {
+     "name": "mtolower",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" tolower(c)"
+    },
+    {
+     "name": "mwout",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wprintf(str)"
+    },
+    {
+     "name": "mfwout",
+     "params": [
+      "stream"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" fwprintf(stream, __VA_ARGS__)"
+    },
+    {
+     "name": "mswout",
+     "params": [
+      "buf"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" swprintf(buf, __VA_ARGS__)"
+    },
+    {
+     "name": "mwin",
+     "params": [],
+     "variadic": true,
+     "expansion": "foreign \"C\" wscanf(__VA_ARGS__)"
+    },
+    {
+     "name": "mfwin",
+     "params": [
+      "stream"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" fwscanf(stream, __VA_ARGS__)"
+    },
+    {
+     "name": "mswin",
+     "params": [
+      "buf"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" swscanf(buf, __VA_ARGS__)"
+    },
+    {
+     "name": "mwcscpy",
+     "params": [
+      "dst",
+      "src"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcscpy(dst, src)"
+    },
+    {
+     "name": "mwcsncpy",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcsncpy(dst, src, n)"
+    },
+    {
+     "name": "mwcscat",
+     "params": [
+      "dst",
+      "src"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcscat(dst, src)"
+    },
+    {
+     "name": "mwcsncat",
+     "params": [
+      "dst",
+      "src",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcsncat(dst, src, n)"
+    },
+    {
+     "name": "mwcscmp",
+     "params": [
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcscmp(a, b)"
+    },
+    {
+     "name": "mwcsncmp",
+     "params": [
+      "a",
+      "b",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcsncmp(a, b, n)"
+    },
+    {
+     "name": "mwcschr",
+     "params": [
+      "str",
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcschr(str, c)"
+    },
+    {
+     "name": "mwcsstr",
+     "params": [
+      "hay",
+      "needle"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcsstr(hay, needle)"
+    },
+    {
+     "name": "mwcslen",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcslen(str)"
+    },
+    {
+     "name": "mfgetwc",
+     "params": [
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fgetwc(stream)"
+    },
+    {
+     "name": "mfputwc",
+     "params": [
+      "c",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fputwc(c, stream)"
+    },
+    {
+     "name": "mfgetws",
+     "params": [
+      "buf",
+      "n",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fgetws(buf, n, stream)"
+    },
+    {
+     "name": "mfputws",
+     "params": [
+      "str",
+      "stream"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fputws(str, stream)"
+    },
+    {
+     "name": "miswalpha",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" iswalpha(c)"
+    },
+    {
+     "name": "miswdigit",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" iswdigit(c)"
+    },
+    {
+     "name": "miswspace",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" iswspace(c)"
+    },
+    {
+     "name": "miswupper",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" iswupper(c)"
+    },
+    {
+     "name": "miswlower",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" iswlower(c)"
+    },
+    {
+     "name": "mtowupper",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" towupper(c)"
+    },
+    {
+     "name": "mtowlower",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" towlower(c)"
+    },
+    {
+     "name": "mimaxabs",
+     "params": [
+      "x"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" imaxabs(x)"
+    },
+    {
+     "name": "mimaxdiv",
+     "params": [
+      "num",
+      "den"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" imaxdiv(num, den)"
+    },
+    {
+     "name": "mstrtoimax",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtoimax(str, end, base)"
+    },
+    {
+     "name": "mstrtoumax",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" strtoumax(str, end, base)"
+    },
+    {
+     "name": "mwcstoimax",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcstoimax(str, end, base)"
+    },
+    {
+     "name": "mwcstoumax",
+     "params": [
+      "str",
+      "end",
+      "base"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" wcstoumax(str, end, base)"
+    },
+    {
+     "name": "msetlocale",
+     "params": [
+      "cat",
+      "locale"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" setlocale(cat, locale)"
+    },
+    {
+     "name": "mlocaleconv",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" localeconv()"
+    },
+    {
+     "name": "msetjmp",
+     "params": [
+      "env"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" setjmp(env)"
+    },
+    {
+     "name": "mlongjmp",
+     "params": [
+      "env",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" longjmp(env, val)"
+    },
+    {
+     "name": "msignal",
+     "params": [
+      "sig",
+      "handler"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" signal(sig, handler)"
+    },
+    {
+     "name": "mraise",
+     "params": [
+      "sig"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" raise(sig)"
+    },
+    {
+     "name": "rust",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" printf(\"RUST is bad\\n\")"
+    },
+    {
+     "name": "mfeclearexcept",
+     "params": [
+      "flags"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" feclearexcept(flags)"
+    },
+    {
+     "name": "mfetestexcept",
+     "params": [
+      "flags"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fetestexcept(flags)"
+    },
+    {
+     "name": "mfegetround",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" fegetround()"
+    },
+    {
+     "name": "mfesetround",
+     "params": [
+      "mode"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fesetround(mode)"
+    },
+    {
+     "name": "mfegetenv",
+     "params": [
+      "envp"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fegetenv(envp)"
+    },
+    {
+     "name": "mfesetenv",
+     "params": [
+      "envp"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fesetenv(envp)"
+    },
+    {
+     "name": "mfeholdexcept",
+     "params": [
+      "envp"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" feholdexcept(envp)"
+    },
+    {
+     "name": "mfeupdateenv",
+     "params": [
+      "envp"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" feupdateenv(envp)"
+    },
+    {
+     "name": "mfegetexceptflag",
+     "params": [
+      "flagp",
+      "ex"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fegetexceptflag(flagp, ex)"
+    },
+    {
+     "name": "mfesetexceptflag",
+     "params": [
+      "flagp",
+      "ex"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" fesetexceptflag(flagp, ex)"
+    },
+    {
+     "name": "mferaiseexcept",
+     "params": [
+      "flags"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" feraiseexcept(flags)"
+    },
+    {
+     "name": "matomic_init",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_init(obj, val)"
+    },
+    {
+     "name": "matomic_load",
+     "params": [
+      "obj"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_load(obj)"
+    },
+    {
+     "name": "matomic_store",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_store(obj, val)"
+    },
+    {
+     "name": "matomic_exchange",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_exchange(obj, val)"
+    },
+    {
+     "name": "matomic_fetch_add",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_fetch_add(obj, val)"
+    },
+    {
+     "name": "matomic_fetch_sub",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_fetch_sub(obj, val)"
+    },
+    {
+     "name": "matomic_fetch_and",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_fetch_and(obj, val)"
+    },
+    {
+     "name": "matomic_fetch_or",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_fetch_or(obj, val)"
+    },
+    {
+     "name": "matomic_fetch_xor",
+     "params": [
+      "obj",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_fetch_xor(obj, val)"
+    },
+    {
+     "name": "matomic_compare_exchange_strong",
+     "params": [
+      "obj",
+      "exp",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_compare_exchange_strong(obj, exp, val)"
+    },
+    {
+     "name": "matomic_compare_exchange_weak",
+     "params": [
+      "obj",
+      "exp",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_compare_exchange_weak(obj, exp, val)"
+    },
+    {
+     "name": "matomic_flag_test_and_set",
+     "params": [
+      "f"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_flag_test_and_set(f)"
+    },
+    {
+     "name": "matomic_flag_clear",
+     "params": [
+      "f"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_flag_clear(f)"
+    },
+    {
+     "name": "matomic_thread_fence",
+     "params": [
+      "order"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_thread_fence(order)"
+    },
+    {
+     "name": "matomic_signal_fence",
+     "params": [
+      "order"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" atomic_signal_fence(order)"
+    },
+    {
+     "name": "mthrd_create",
+     "params": [
+      "t",
+      "func",
+      "arg"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_create(t, func, arg)"
+    },
+    {
+     "name": "mthrd_join",
+     "params": [
+      "t",
+      "res"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_join(t, res)"
+    },
+    {
+     "name": "mthrd_detach",
+     "params": [
+      "t"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_detach(t)"
+    },
+    {
+     "name": "mthrd_exit",
+     "params": [
+      "res"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_exit(res)"
+    },
+    {
+     "name": "mthrd_current",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_current()"
+    },
+    {
+     "name": "mthrd_equal",
+     "params": [
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_equal(a, b)"
+    },
+    {
+     "name": "mthrd_sleep",
+     "params": [
+      "dur",
+      "rem"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_sleep(dur, rem)"
+    },
+    {
+     "name": "mthrd_yield",
+     "params": [],
+     "variadic": false,
+     "expansion": "foreign \"C\" thrd_yield()"
+    },
+    {
+     "name": "mmtx_init",
+     "params": [
+      "m",
+      "type"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtx_init(m, type)"
+    },
+    {
+     "name": "mmtx_lock",
+     "params": [
+      "m"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtx_lock(m)"
+    },
+    {
+     "name": "mmtx_trylock",
+     "params": [
+      "m"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtx_trylock(m)"
+    },
+    {
+     "name": "mmtx_unlock",
+     "params": [
+      "m"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtx_unlock(m)"
+    },
+    {
+     "name": "mmtx_destroy",
+     "params": [
+      "m"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtx_destroy(m)"
+    },
+    {
+     "name": "mcnd_init",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" cnd_init(c)"
+    },
+    {
+     "name": "mcnd_signal",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" cnd_signal(c)"
+    },
+    {
+     "name": "mcnd_broadcast",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" cnd_broadcast(c)"
+    },
+    {
+     "name": "mcnd_wait",
+     "params": [
+      "c",
+      "m"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" cnd_wait(c, m)"
+    },
+    {
+     "name": "mcnd_destroy",
+     "params": [
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" cnd_destroy(c)"
+    },
+    {
+     "name": "mtss_create",
+     "params": [
+      "key",
+      "dtor"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" tss_create(key, dtor)"
+    },
+    {
+     "name": "mtss_get",
+     "params": [
+      "key"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" tss_get(key)"
+    },
+    {
+     "name": "mtss_set",
+     "params": [
+      "key",
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" tss_set(key, val)"
+    },
+    {
+     "name": "mtss_delete",
+     "params": [
+      "key"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" tss_delete(key)"
+    },
+    {
+     "name": "mcall_once",
+     "params": [
+      "flag",
+      "func"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" call_once(flag, func)"
+    },
+    {
+     "name": "mmbrtoc16",
+     "params": [
+      "pc16",
+      "s",
+      "n",
+      "ps"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mbrtoc16(pc16, s, n, ps)"
+    },
+    {
+     "name": "mc16rtomb",
+     "params": [
+      "s",
+      "c16",
+      "ps"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" c16rtomb(s, c16, ps)"
+    },
+    {
+     "name": "mmbrtoc32",
+     "params": [
+      "pc32",
+      "s",
+      "n",
+      "ps"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mbrtoc32(pc32, s, n, ps)"
+    },
+    {
+     "name": "mc32rtomb",
+     "params": [
+      "s",
+      "c32",
+      "ps"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" c32rtomb(s, c32, ps)"
+    },
+    {
+     "name": "MODE_WRITE",
+     "params": [],
+     "variadic": false,
+     "expansion": "\"w\\0\""
+    },
+    {
+     "name": "MODE_READ",
+     "params": [],
+     "variadic": false,
+     "expansion": "\"r\\0\""
+    },
+    {
+     "name": "massert",
+     "params": [
+      "cond",
+      "msg"
+     ],
+     "variadic": false,
+     "expansion": "if ((cond) == 0) {          foreign \"C\" puts(msg);          foreign \"C\" exit(1);      }"
+    },
+    {
+     "name": "ASSERT_FILE",
+     "params": [
+      "ptr"
+     ],
+     "variadic": false,
+     "expansion": "if ((ptr) == 0) {          foreign \"C\" puts(\"Error: File handle is NULL!\\0\");          foreign \"C\" exit(1);      }"
+    }
+   ]
+  },
+  {
+   "file": "cmmath.h",
+   "title": "cmmath.h",
+   "doc": "cmmath.h — C99 math wrappers",
+   "version": "1.0.4",
+   "relativePath": "gmm/libgmm/cmmath.h",
+   "macros": [
+    {
+     "name": "madd",
+     "params": [
+      "result"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" madd(result, __VA_ARGS__)"
+    },
+    {
+     "name": "msub",
+     "params": [
+      "result"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" msub(result, __VA_ARGS__)"
+    },
+    {
+     "name": "mmul",
+     "params": [
+      "result"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" mmul(result, __VA_ARGS__)"
+    },
+    {
+     "name": "mfdiv",
+     "params": [
+      "result"
+     ],
+     "variadic": true,
+     "expansion": "foreign \"C\" mfdiv(result, __VA_ARGS__)"
+    },
+    {
+     "name": "mE",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mE(result)"
+    },
+    {
+     "name": "mLOG2E",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mLOG2E(result)"
+    },
+    {
+     "name": "mLOG10E",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mLOG10E(result)"
+    },
+    {
+     "name": "mLN2",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mLN2(result)"
+    },
+    {
+     "name": "mLN10",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mLN10(result)"
+    },
+    {
+     "name": "mPI",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mPI(result)"
+    },
+    {
+     "name": "mPI_2",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mPI_2(result)"
+    },
+    {
+     "name": "mPI_4",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mPI_4(result)"
+    },
+    {
+     "name": "m1_PI",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" m1_PI(result)"
+    },
+    {
+     "name": "m2_PI",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" m2_PI(result)"
+    },
+    {
+     "name": "m2_SQRTPI",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" m2_SQRTPI(result)"
+    },
+    {
+     "name": "mSQRT2",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mSQRT2(result)"
+    },
+    {
+     "name": "mSQRT1_2",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mSQRT1_2(result)"
+    },
+    {
+     "name": "msin",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" msin(result,a)"
+    },
+    {
+     "name": "mcos",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mcos(result,a)"
+    },
+    {
+     "name": "mtan",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtan(result,a)"
+    },
+    {
+     "name": "masin",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" masin(result,a)"
+    },
+    {
+     "name": "macos",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" macos(result,a)"
+    },
+    {
+     "name": "matan",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" matan(result,a)"
+    },
+    {
+     "name": "matan2",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" matan2(result,a,b)"
+    },
+    {
+     "name": "msinh",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" msinh(result,a)"
+    },
+    {
+     "name": "mcosh",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mcosh(result,a)"
+    },
+    {
+     "name": "mtanh",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtanh(result,a)"
+    },
+    {
+     "name": "masinh",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" masinh(result,a)"
+    },
+    {
+     "name": "macosh",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" macosh(result,a)"
+    },
+    {
+     "name": "matanh",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" matanh(result,a)"
+    },
+    {
+     "name": "mexp",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mexp(result,a)"
+    },
+    {
+     "name": "mexp2",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mexp2(result,a)"
+    },
+    {
+     "name": "mexpm1",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mexpm1(result,a)"
+    },
+    {
+     "name": "mlog",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlog(result,a)"
+    },
+    {
+     "name": "mlog10",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlog10(result,a)"
+    },
+    {
+     "name": "mlog2",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlog2(result,a)"
+    },
+    {
+     "name": "mlog1p",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlog1p(result,a)"
+    },
+    {
+     "name": "mlogb",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlogb(result,a)"
+    },
+    {
+     "name": "milogb",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" milogb(result,a)"
+    },
+    {
+     "name": "mpow",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mpow(result,a,b)"
+    },
+    {
+     "name": "msqrt",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" msqrt(result,a)"
+    },
+    {
+     "name": "mcbrt",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mcbrt(result,a)"
+    },
+    {
+     "name": "mhypot",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mhypot(result,a,b)"
+    },
+    {
+     "name": "mtgamma",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtgamma(result,a)"
+    },
+    {
+     "name": "mlgamma",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlgamma(result,a)"
+    },
+    {
+     "name": "merf",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" merf(result,a)"
+    },
+    {
+     "name": "merfc",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" merfc(result,a)"
+    },
+    {
+     "name": "mfabs",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfabs(result,a)"
+    },
+    {
+     "name": "mcopysign",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mcopysign(result,a,b)"
+    },
+    {
+     "name": "mfmod",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfmod(result,a,b)"
+    },
+    {
+     "name": "mremainder",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mremainder(result,a,b)"
+    },
+    {
+     "name": "mremquo",
+     "params": [
+      "result",
+      "quo",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mremquo(result,quo,a,b)"
+    },
+    {
+     "name": "mfmax",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfmax(result,a,b)"
+    },
+    {
+     "name": "mfmin",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfmin(result,a,b)"
+    },
+    {
+     "name": "mfdim",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfdim(result,a,b)"
+    },
+    {
+     "name": "mfrexp",
+     "params": [
+      "result",
+      "exp",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfrexp(result,exp,a)"
+    },
+    {
+     "name": "mmodf",
+     "params": [
+      "frac",
+      "integer",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mmodf(frac,integer,a)"
+    },
+    {
+     "name": "mldexp",
+     "params": [
+      "result",
+      "a",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mldexp(result,a,n)"
+    },
+    {
+     "name": "mscalbn",
+     "params": [
+      "result",
+      "a",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mscalbn(result,a,n)"
+    },
+    {
+     "name": "mscalbln",
+     "params": [
+      "result",
+      "a",
+      "n"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mscalbln(result,a,n)"
+    },
+    {
+     "name": "mnextafter",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mnextafter(result,a,b)"
+    },
+    {
+     "name": "mnexttoward",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mnexttoward(result,a,b)"
+    },
+    {
+     "name": "mfma",
+     "params": [
+      "result",
+      "a",
+      "b",
+      "c"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfma(result,a,b,c)"
+    },
+    {
+     "name": "mnan",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mnan(result,a)"
+    },
+    {
+     "name": "mceil",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mceil(result,a)"
+    },
+    {
+     "name": "mfloor",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfloor(result,a)"
+    },
+    {
+     "name": "mtrunc",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mtrunc(result,a)"
+    },
+    {
+     "name": "mround",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mround(result,a)"
+    },
+    {
+     "name": "mlround",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlround(result,a)"
+    },
+    {
+     "name": "mllround",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mllround(result,a)"
+    },
+    {
+     "name": "mrint",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mrint(result,a)"
+    },
+    {
+     "name": "mlrint",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mlrint(result,a)"
+    },
+    {
+     "name": "mllrint",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mllrint(result,a)"
+    },
+    {
+     "name": "mnearbyint",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mnearbyint(result,a)"
+    },
+    {
+     "name": "mfpclassify",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mfpclassify(result,a)"
+    },
+    {
+     "name": "misfinite",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misfinite(result,a)"
+    },
+    {
+     "name": "misinf",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misinf(result,a)"
+    },
+    {
+     "name": "misnan",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misnan(result,a)"
+    },
+    {
+     "name": "misnormal",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misnormal(result,a)"
+    },
+    {
+     "name": "msignbit",
+     "params": [
+      "result",
+      "a"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" msignbit(result,a)"
+    },
+    {
+     "name": "misgreater",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misgreater(result,a,b)"
+    },
+    {
+     "name": "misgreaterequal",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misgreaterequal(result,a,b)"
+    },
+    {
+     "name": "misless",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misless(result,a,b)"
+    },
+    {
+     "name": "mislessequal",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mislessequal(result,a,b)"
+    },
+    {
+     "name": "mislessgreater",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mislessgreater(result,a,b)"
+    },
+    {
+     "name": "misunordered",
+     "params": [
+      "result",
+      "a",
+      "b"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" misunordered(result,a,b)"
+    }
+   ]
+  },
+  {
+   "file": "ret.h",
+   "title": "ret.h",
+   "doc": "ret.h — CPS / tail-call helpers",
+   "version": null,
+   "relativePath": "gmm/libgmm/ret.h",
+   "macros": [
+    {
+     "name": "CMM_RET_H",
+     "params": [],
+     "variadic": false,
+     "expansion": ""
+    },
+    {
+     "name": "fnc",
+     "params": [
+      "name"
+     ],
+     "variadic": false,
+     "expansion": "name (W_ ret_addr)"
+    },
+    {
+     "name": "fnc_a",
+     "params": [
+      "name"
+     ],
+     "variadic": true,
+     "expansion": "name (W_ ret_addr, __VA_ARGS__)"
+    },
+    {
+     "name": "ret_v",
+     "params": [],
+     "variadic": false,
+     "expansion": "jump ret_addr ()"
+    },
+    {
+     "name": "ret",
+     "params": [
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "jump ret_addr (val)"
+    },
+    {
+     "name": "ret2",
+     "params": [
+      "v1",
+      "v2"
+     ],
+     "variadic": false,
+     "expansion": "jump ret_addr (v1, v2)"
+    },
+    {
+     "name": "ret3",
+     "params": [
+      "v1",
+      "v2",
+      "v3"
+     ],
+     "variadic": false,
+     "expansion": "jump ret_addr (v1, v2, v3)"
+    },
+    {
+     "name": "mall_v",
+     "params": [
+      "fn",
+      "cont"
+     ],
+     "variadic": false,
+     "expansion": "jump fn (cont)"
+    },
+    {
+     "name": "mall",
+     "params": [
+      "fn",
+      "cont"
+     ],
+     "variadic": true,
+     "expansion": "jump fn (cont, __VA_ARGS__)"
+    }
+   ]
+  },
+  {
+   "file": "file.h",
+   "title": "file.h",
+   "doc": "file.h — file helpers",
+   "version": null,
+   "relativePath": "lib/fs-lib/file.h",
+   "macros": [
+    {
+     "name": "MODE_WRITE",
+     "params": [],
+     "variadic": false,
+     "expansion": "\"w\\0\""
+    },
+    {
+     "name": "MODE_READ",
+     "params": [],
+     "variadic": false,
+     "expansion": "\"r\\0\""
+    },
+    {
+     "name": "ASSERT_FILE",
+     "params": [
+      "ptr"
+     ],
+     "variadic": false,
+     "expansion": "if (ptr == 0) {          foreign \"C\" puts(\"Error: File!\\0\" \"ptr\");          return (1);      }"
+    }
+   ]
+  },
+  {
+   "file": "cmmx11.h",
+   "title": "cmmx11.h",
+   "doc": "cmmx11.h — X11 wrappers",
+   "version": null,
+   "relativePath": "lib/x11-lib/cmmx11.h",
+   "macros": [
+    {
+     "name": "mXOpenDisplay",
+     "params": [
+      "result",
+      "name"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXOpenDisplay(result, name)"
+    },
+    {
+     "name": "mXCloseDisplay",
+     "params": [
+      "dpy_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCloseDisplay(dpy_ptr)"
+    },
+    {
+     "name": "mXFlush",
+     "params": [
+      "dpy_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFlush(dpy_ptr)"
+    },
+    {
+     "name": "mXSync",
+     "params": [
+      "dpy_ptr",
+      "discard"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSync(dpy_ptr, discard)"
+    },
+    {
+     "name": "mXDefaultRootWindow",
+     "params": [
+      "result",
+      "dpy_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDefaultRootWindow(result, dpy_ptr)"
+    },
+    {
+     "name": "mXDefaultScreen",
+     "params": [
+      "result",
+      "dpy_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDefaultScreen(result, dpy_ptr)"
+    },
+    {
+     "name": "mXDisplayWidth",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "scr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDisplayWidth(result, dpy_ptr, scr)"
+    },
+    {
+     "name": "mXDisplayHeight",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "scr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDisplayHeight(result, dpy_ptr, scr)"
+    },
+    {
+     "name": "mXBlackPixel",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "scr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXBlackPixel(result, dpy_ptr, scr)"
+    },
+    {
+     "name": "mXWhitePixel",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "scr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXWhitePixel(result, dpy_ptr, scr)"
+    },
+    {
+     "name": "mXCreateSimpleWindow",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "parent_ptr",
+      "x",
+      "y",
+      "w",
+      "h",
+      "border_w",
+      "border_c",
+      "bg"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCreateSimpleWindow(result, dpy_ptr, parent_ptr, x, y, w, h, border_w, border_c, bg)"
+    },
+    {
+     "name": "mXCreateWindow",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "parent_ptr",
+      "x",
+      "y",
+      "w",
+      "h",
+      "border_w",
+      "depth",
+      "class_type",
+      "visual_ptr",
+      "valuemask",
+      "attributes_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCreateWindow(result, dpy_ptr, parent_ptr, x, y, w, h, border_w, depth, class_type, visual_ptr, valuemask, attributes_ptr)"
+    },
+    {
+     "name": "mXMapWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXMapWindow(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXMapRaised",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXMapRaised(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXUnmapWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXUnmapWindow(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXDestroyWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDestroyWindow(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXMoveWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "x",
+      "y"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXMoveWindow(dpy_ptr, win_ptr, x, y)"
+    },
+    {
+     "name": "mXResizeWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "w",
+      "h"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXResizeWindow(dpy_ptr, win_ptr, w, h)"
+    },
+    {
+     "name": "mXMoveResizeWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "x",
+      "y",
+      "w",
+      "h"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXMoveResizeWindow(dpy_ptr, win_ptr, x, y, w, h)"
+    },
+    {
+     "name": "mXSetWindowBorderWidth",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "width"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetWindowBorderWidth(dpy_ptr, win_ptr, width)"
+    },
+    {
+     "name": "mXSetWindowBorder",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "border_pixel"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetWindowBorder(dpy_ptr, win_ptr, border_pixel)"
+    },
+    {
+     "name": "mXSetWindowBackground",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "color"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetWindowBackground(dpy_ptr, win_ptr, color)"
+    },
+    {
+     "name": "mXClearWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXClearWindow(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXClearArea",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "x",
+      "y",
+      "w",
+      "h",
+      "exposures"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXClearArea(dpy_ptr, win_ptr, x, y, w, h, exposures)"
+    },
+    {
+     "name": "mXRaiseWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXRaiseWindow(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXLowerWindow",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXLowerWindow(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXSetWindowTitle",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "title"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetWindowTitle(dpy_ptr, win_ptr, title)"
+    },
+    {
+     "name": "mXSelectInput",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "event_mask"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSelectInput(dpy_ptr, win_ptr, event_mask)"
+    },
+    {
+     "name": "mXAllocEvent",
+     "params": [
+      "result"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXAllocEvent(result)"
+    },
+    {
+     "name": "mXFreeEvent",
+     "params": [
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFreeEvent(ev_ptr)"
+    },
+    {
+     "name": "mXNextEvent",
+     "params": [
+      "dpy_ptr",
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXNextEvent(dpy_ptr, ev_ptr)"
+    },
+    {
+     "name": "mXPeekEvent",
+     "params": [
+      "dpy_ptr",
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXPeekEvent(dpy_ptr, ev_ptr)"
+    },
+    {
+     "name": "mXPending",
+     "params": [
+      "result",
+      "dpy_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXPending(result, dpy_ptr)"
+    },
+    {
+     "name": "mXCheckTypedEvent",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "event_type",
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCheckTypedEvent(result, dpy_ptr, event_type, ev_ptr)"
+    },
+    {
+     "name": "mXGetEventType",
+     "params": [
+      "result",
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXGetEventType(result, ev_ptr)"
+    },
+    {
+     "name": "mXGetButtonCoordinates",
+     "params": [
+      "x_ptr",
+      "y_ptr",
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXGetButtonCoordinates(x_ptr, y_ptr, ev_ptr)"
+    },
+    {
+     "name": "mXGetPointerButton",
+     "params": [
+      "result",
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXGetPointerButton(result, ev_ptr)"
+    },
+    {
+     "name": "mXGetKeyCode",
+     "params": [
+      "result",
+      "ev_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXGetKeyCode(result, ev_ptr)"
+    },
+    {
+     "name": "mXLookupString",
+     "params": [
+      "result_str",
+      "keysym_res",
+      "ev_ptr",
+      "max_len"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXLookupString(result_str, keysym_res, ev_ptr, max_len)"
+    },
+    {
+     "name": "mXIsButtonClicked",
+     "params": [
+      "result",
+      "ev_ptr",
+      "bx",
+      "by",
+      "bw",
+      "bh"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXIsButtonClicked(result, ev_ptr, bx, by, bw, bh)"
+    },
+    {
+     "name": "mXCreateGC",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCreateGC(result, dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXFreeGC",
+     "params": [
+      "dpy_ptr",
+      "gc_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFreeGC(dpy_ptr, gc_ptr)"
+    },
+    {
+     "name": "mXSetForeground",
+     "params": [
+      "dpy_ptr",
+      "gc_ptr",
+      "color"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetForeground(dpy_ptr, gc_ptr, color)"
+    },
+    {
+     "name": "mXSetBackground",
+     "params": [
+      "dpy_ptr",
+      "gc_ptr",
+      "color"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetBackground(dpy_ptr, gc_ptr, color)"
+    },
+    {
+     "name": "mXSetLineWidth",
+     "params": [
+      "dpy_ptr",
+      "gc_ptr",
+      "width"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetLineWidth(dpy_ptr, gc_ptr, width)"
+    },
+    {
+     "name": "mXDrawPoint",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "gc_ptr",
+      "x",
+      "y"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDrawPoint(dpy_ptr, win_ptr, gc_ptr, x, y)"
+    },
+    {
+     "name": "mXDrawLine",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "gc_ptr",
+      "x1",
+      "y1",
+      "x2",
+      "y2"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDrawLine(dpy_ptr, win_ptr, gc_ptr, x1, y1, x2, y2)"
+    },
+    {
+     "name": "mXDrawRectangle",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "gc_ptr",
+      "x",
+      "y",
+      "w",
+      "h"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDrawRectangle(dpy_ptr, win_ptr, gc_ptr, x, y, w, h)"
+    },
+    {
+     "name": "mXFillRectangle",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "gc_ptr",
+      "x",
+      "y",
+      "w",
+      "h"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFillRectangle(dpy_ptr, win_ptr, gc_ptr, x, y, w, h)"
+    },
+    {
+     "name": "mXDrawArc",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "gc_ptr",
+      "x",
+      "y",
+      "w",
+      "h",
+      "a1",
+      "a2"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDrawArc(dpy_ptr, win_ptr, gc_ptr, x, y, w, h, a1, a2)"
+    },
+    {
+     "name": "mXFillArc",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "gc_ptr",
+      "x",
+      "y",
+      "w",
+      "h",
+      "a1",
+      "a2"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFillArc(dpy_ptr, win_ptr, gc_ptr, x, y, w, h, a1, a2)"
+    },
+    {
+     "name": "mXDrawString",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "gc_ptr",
+      "x",
+      "y",
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDrawString(dpy_ptr, win_ptr, gc_ptr, x, y, str)"
+    },
+    {
+     "name": "mXDrawButtonFrame",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "bx",
+      "by",
+      "bw",
+      "bh",
+      "bg_color",
+      "border_color"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDrawButtonFrame(dpy_ptr, win_ptr, bx, by, bw, bh, bg_color, border_color)"
+    },
+    {
+     "name": "mXCreatePixmap",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "d_ptr",
+      "width",
+      "height",
+      "depth"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCreatePixmap(result, dpy_ptr, d_ptr, width, height, depth)"
+    },
+    {
+     "name": "mXFreePixmap",
+     "params": [
+      "dpy_ptr",
+      "pixmap_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFreePixmap(dpy_ptr, pixmap_ptr)"
+    },
+    {
+     "name": "mXCopyArea",
+     "params": [
+      "dpy_ptr",
+      "src_ptr",
+      "dest_ptr",
+      "gc_ptr",
+      "src_x",
+      "src_y",
+      "w",
+      "h",
+      "dest_x",
+      "dest_y"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCopyArea(dpy_ptr, src_ptr, dest_ptr, gc_ptr, src_x, src_y, w, h, dest_x, dest_y)"
+    },
+    {
+     "name": "mXCreateImage",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "visual_ptr",
+      "depth",
+      "format",
+      "offset",
+      "data",
+      "width",
+      "height",
+      "bitmap_pad",
+      "bytes_per_line"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCreateImage(result, dpy_ptr, visual_ptr, depth, format, offset, data, width, height, bitmap_pad, bytes_per_line)"
+    },
+    {
+     "name": "mXPutImage",
+     "params": [
+      "dpy_ptr",
+      "d_ptr",
+      "gc_ptr",
+      "img_ptr",
+      "src_x",
+      "src_y",
+      "dest_x",
+      "dest_y",
+      "w",
+      "h"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXPutImage(dpy_ptr, d_ptr, gc_ptr, img_ptr, src_x, src_y, dest_x, dest_y, w, h)"
+    },
+    {
+     "name": "mXDestroyImage",
+     "params": [
+      "img_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDestroyImage(img_ptr)"
+    },
+    {
+     "name": "mXLoadQueryFont",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "font_name"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXLoadQueryFont(result, dpy_ptr, font_name)"
+    },
+    {
+     "name": "mXSetFont",
+     "params": [
+      "dpy_ptr",
+      "gc_ptr",
+      "font_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetFont(dpy_ptr, gc_ptr, font_ptr)"
+    },
+    {
+     "name": "mXTextWidth",
+     "params": [
+      "result",
+      "font_ptr",
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXTextWidth(result, font_ptr, str)"
+    },
+    {
+     "name": "mXFreeFont",
+     "params": [
+      "dpy_ptr",
+      "font_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFreeFont(dpy_ptr, font_ptr)"
+    },
+    {
+     "name": "mXInternAtom",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "name",
+      "only_if_exists"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXInternAtom(result, dpy_ptr, name, only_if_exists)"
+    },
+    {
+     "name": "mXSetWMProtocols",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "atom_ptr",
+      "count"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXSetWMProtocols(dpy_ptr, win_ptr, atom_ptr, count)"
+    },
+    {
+     "name": "mXChangeProperty",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "prop_atom",
+      "type_atom",
+      "format",
+      "mode",
+      "data",
+      "nelements"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXChangeProperty(dpy_ptr, win_ptr, prop_atom, type_atom, format, mode, data, nelements)"
+    },
+    {
+     "name": "mXCreateFontCursor",
+     "params": [
+      "result",
+      "dpy_ptr",
+      "shape"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXCreateFontCursor(result, dpy_ptr, shape)"
+    },
+    {
+     "name": "mXDefineCursor",
+     "params": [
+      "dpy_ptr",
+      "win_ptr",
+      "cursor_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXDefineCursor(dpy_ptr, win_ptr, cursor_ptr)"
+    },
+    {
+     "name": "mXUndefineCursor",
+     "params": [
+      "dpy_ptr",
+      "win_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXUndefineCursor(dpy_ptr, win_ptr)"
+    },
+    {
+     "name": "mXFreeCursor",
+     "params": [
+      "dpy_ptr",
+      "cursor_ptr"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mXFreeCursor(dpy_ptr, cursor_ptr)"
+    },
+    {
+     "name": "mprint",
+     "params": [
+      "str"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mprint(str)"
+    },
+    {
+     "name": "mprint_int",
+     "params": [
+      "val"
+     ],
+     "variadic": false,
+     "expansion": "foreign \"C\" mprint_int(val)"
+    }
+   ]
+  }
+ ]
+}

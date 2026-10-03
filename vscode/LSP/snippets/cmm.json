@@ -1,0 +1,192 @@
+{
+  "Cmm: hello world": {
+    "prefix": "cmmhello",
+    "description": "A complete minimal Cmm program",
+    "body": [
+      "#include \"Cmm.h\"",
+      "",
+      "section \"data\" {",
+      "\tmsg: bits8[] \"Hello, Cmm!\\n\\0\";",
+      "}",
+      "",
+      "export main;",
+      "",
+      "main() {",
+      "\tforeign \"C\" puts(msg \"ptr\");",
+      "\tforeign \"C\" exit(0);",
+      "}"
+    ]
+  },
+
+  "data section string": {
+    "prefix": "sec",
+    "description": "A section \"data\" block declaring one NUL-terminated string",
+    "body": ["section \"data\" {", "\t${1:name}: bits8[] \"${2:text}\\n\\0\";", "}"]
+  },
+  "bss section variable": {
+    "prefix": "bss",
+    "description": "A section \"bss\" block declaring a zero-initialised global",
+    "body": ["section \"bss\" {", "\t${1:name}: ${2|bits8,bits32,bits64,float32,float64|};", "}"]
+  },
+  "data section constant": {
+    "prefix": "dsec",
+    "description": "A section \"data\" block declaring an initialised scalar constant",
+    "body": ["section \"data\" {", "\t${1:name}: ${2|bits32,bits64,float32,float64|} ${3:value};", "}"]
+  },
+  "exported procedure": {
+    "prefix": "proc",
+    "description": "export a procedure definition with no return type",
+    "body": ["export ${1:name};", "", "${1:name}(${2:}) {", "\t$0", "}"]
+  },
+  "exported procedure with parameters": {
+    "prefix": "procp",
+    "description": "export a procedure that takes typed parameters",
+    "body": [
+      "export ${1:name};",
+      "",
+      "${1:name}(${2|W_,bits8,bits16,bits32,bits64,float32,float64,gcptr,I32,I64,CInt,CLong|} ${3:a}) {",
+      "\t$0",
+      "}"
+    ]
+  },
+  "main procedure": {
+    "prefix": "main",
+    "description": "export main; terminating with mexit(0) as Cmm requires",
+    "body": ["export main;", "", "main() {", "\t$0", "\tmexit(0);", "}"]
+  },
+  "foreign C call": {
+    "prefix": "fcall",
+    "description": "A foreign \"C\" statement-form call",
+    "body": ["foreign \"C\" ${1:printf}(${2});"]
+  },
+  "foreign C call bound to a variable": {
+    "prefix": "fcallr",
+    "description": "A foreign \"C\" expression-form call assigning its result",
+    "body": ["(${1:r}) = foreign \"C\" ${2:helper}($0);"]
+  },
+  "ffi call": {
+    "prefix": "ffi",
+    "description": "ffi is the stdc--.h shorthand for foreign \"C\"",
+    "body": ["ffi ${1:puts}(${0});"]
+  },
+  "import C symbol": {
+    "prefix": "imp",
+    "description": "Top-level import \"C\" declaration (C headers cannot be #included)",
+    "body": ["import \"C\" ${1:symbol};"]
+  },
+  "local declaration": {
+    "prefix": "decl",
+    "description": "Declare one or more locals (initialisers are not allowed in Cmm bodies)",
+    "body": ["${1|bits8,bits16,bits32,bits64,float32,float64,gcptr,W_,P_,L_,F_,D_,I32,I64,CInt,CLong|} ${2:name};$0"]
+  },
+  "memory read": {
+    "prefix": "read",
+    "description": "Load a value of a given width from a computed address",
+    "body": ["${1:r} = ${2|bits8,bits16,bits32,bits64,float32,float64,W_|[${3}];"]
+  },
+  "memory write": {
+    "prefix": "write",
+    "description": "Store a value of a given width to a computed address",
+    "body": ["${2|bits8,bits16,bits32,bits64,float32,float64,W_|[${3}]} = ${1:value};$0"]
+  },
+  "if": {
+    "prefix": "if",
+    "description": "Cmm if / else if / else",
+    "body": [
+      "if (${1:cond}) {",
+      "\t$0",
+      "} else if (${2:cond}) {",
+      "\t$1",
+      "} else {",
+      "\t$2",
+      "}"
+    ]
+  },
+  "switch": {
+    "prefix": "switch",
+    "description": "A multi-way branch (arms never fall through)",
+    "body": [
+      "switch (${1:value}) {",
+      "\tcase ${2:1}: {",
+      "\t\t$3",
+      "\t\tgoto ${4:exit_switch};",
+      "\t}",
+      "\tdefault: {",
+      "\t\t$0",
+      "\t}",
+      "}",
+      "",
+      "${4:exit_switch}:"
+    ]
+  },
+  "label": {
+    "prefix": "label",
+    "description": "A local label",
+    "body": ["${1:name}:", "\t$0"]
+  },
+  "goto": {
+    "prefix": "goto",
+    "description": "Jump to a local label",
+    "body": ["goto ${1:name};$0"]
+  },
+  "goto loop": {
+    "prefix": "loop",
+    "description": "The label + goto counting-loop idiom Cmm requires",
+    "body": ["${1:loop_start}:", "\t${2:i} = ${2:i} + 1;", "\tif (${2:i} < ${3:n}) goto ${1:loop_start};"]
+  },
+  "jump (tail call)": {
+    "prefix": "jump",
+    "description": "A non-returning tail call — nothing after it in the same block ever runs",
+    "body": ["jump ${1:name} (${2});", "$0"]
+  },
+  "prim operation": {
+    "prefix": "prim",
+    "description": "A primitive operation in the `prim %name(...)` form",
+    "body": ["(${1:r}) = prim %${2|sqrt64f,memcpy,memset,fadd,fmul,zx32,sx32,lobits8,i2f64,f2i32|}(${0});"]
+  },
+  "bare primitive operation": {
+    "prefix": "pop",
+    "description": "A primitive operation in the bare `%name(...)` form",
+    "body": ["${1:r} = %${2|zx32,sx32,lobits8,lobits16,lobits32,i2f64,f2i32,f2f64,f2f32|}($0);"]
+  },
+  "print a formatted value": {
+    "prefix": "moutf",
+    "description": "printf-style output through the stdc--.h wrapper",
+    "body": ["moutf(\"${1:text}\", ${0});"]
+  },
+  "print a string": {
+    "prefix": "mout",
+    "description": "puts-style output through the stdc--.h wrapper",
+    "body": ["mout(${0});"]
+  },
+  "exit": {
+    "prefix": "mexit",
+    "description": "Terminate the program (required at the end of main)",
+    "body": ["mexit(${0:0});"]
+  },
+  "assert": {
+    "prefix": "massert",
+    "description": "stdc--.h assertion macro",
+    "body": ["massert(${1:cond}, \"${2:assertion failed}\");$0"]
+  },
+  "include": {
+    "prefix": "inc",
+    "description": "#include directive",
+    "body": ["#include \"${1:Cmm.h}\"$0"]
+  },
+  "Cmm boilerplate": {
+    "prefix": "boiler",
+    "description": "The include header pair used by nearly every Cmm program",
+    "body": ["#include \"Cmm.h\"", "#include \"stdc--.h\"", "$0"]
+  },
+  "Cmm boilerplate with cmmath": {
+    "prefix": "boilerm",
+    "description": "Include triple; cmmath.h must come last because it #undefs mdiv",
+    "body": ["#include \"Cmm.h\"", "#include \"stdc--.h\"", "#include \"cmmath.h\"", "$0"]
+  },
+  "gmm build": {
+    "prefix": "build",
+    "description": "Compile and link the current file with the gmm driver",
+    "body": ["gmm -o app ${1:main.cmm}$0"]
+  }
+}
