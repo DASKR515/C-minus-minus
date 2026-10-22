@@ -4,7 +4,7 @@
 export main;
 
 main() {
-    bits32 i;
+    I32 i;
     i = 1;
 
 loop_start:
