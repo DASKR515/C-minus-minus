@@ -7,6 +7,6 @@ section "data" {
 export main;
 
 main() {
-    foreign "C" puts(msg "ptr");
-    return (0);
+    mout(msg "ptr");
+    mexit(0);
 }
