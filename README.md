@@ -46,6 +46,8 @@ It collects, in one place:
 
 I apologize for not being organized. I'm not used to publishing on GitHub, and I'm a bit torn between following my own idea and following logic. Thank you for your patience while this project takes shape.
 
+You don't need to know Haskell to use this. Cmm is a small C-like language; GHC is simply the only compiler that builds it, and gmm lets you use it as a standalone toolchain with no Haskell runtime in the result.
+
 ---
 
 ## 🧬 What is Cmm?
