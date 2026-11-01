@@ -1,7 +1,7 @@
-# gmm (GHC C-- Manager) v4.0
+# gmm (GHC C-- Manager) v4.1
 
-> **Linux:** `ghc` and a C compiler (`gcc` or `clang`) must already be installed, or point gmm at your own with `GMM_GHC` / `GMM_CC`.
-> **Windows:** `gmm` installs a missing toolchain itself on first run by downloading the official GHC bindist — no Chocolatey, no manual steps.
+> **First run (Linux, macOS, Windows):** if no toolchain is found, `gmm` downloads the official GHC 9.12.4 bindist by itself and unpacks it into its installation directory. No manual steps, no Chocolatey. Point it at your own GHC with `GMM_GHC` if you prefer.
+> **Linux/macOS:** a C compiler (`gcc` or `clang`) must be installed, because the final link is done by the system toolchain (or set `GMM_CC`).
 
 **A standalone toolchain, project builder, and runner for writing and compiling C-- (Cmm) without the GHC Haskell Runtime System.**
 
@@ -111,41 +111,80 @@ Because `cc` has no notion of the Haskell RTS, it links only what the object fil
 
 # Installation
 
-## Linux
+## Prebuilt packages
+
+`./build.sh` (see [Building every platform](#building-every-platform)) produces these files in `build/`:
+
+| Format | File | Install |
+| --- | --- | --- |
+| Debian / Ubuntu | `gmm_<ver>_<arch>.deb` | `sudo dpkg -i gmm_4.1_amd64.deb` |
+| Fedora / RHEL / openSUSE | `gmm-<ver>-1.<arch>.rpm` | `sudo rpm -i gmm-4.1-1.x86_64.rpm` |
+| Alpine | `gmm_<ver>_<arch>.apk` | `sudo apk add --allow-untrusted gmm_4.1_x86_64.apk` |
+| Any Linux | `gmm-<ver>-linux-<arch>.tar.xz` | unpack, copy `gmm` to `/usr/bin`, `gmm.1` to `/usr/share/man/man1` |
+| Windows | `gmm.exe` | put it anywhere in `PATH` |
+
+Linux packages exist for `amd64` and `arm64`. They install the binary as `/usr/bin/gmm` and the manual page as `/usr/share/man/man1/gmm.1.gz`, so `man gmm` works right after installing. The `.apk` is unsigned, hence `--allow-untrusted`.
+
+> `gmm` itself uses `/usr/local/bin/gmm` as a *directory* for its downloaded toolchain, so the binary is deliberately installed in `/usr/bin`, not in `/usr/local/bin`.
+
+## From source
 
 ```bash
-go build -o gmm .
-sudo mv gmm /usr/local/bin/
+go build -o gmm main.go
+sudo install -m 0755 gmm /usr/bin/gmm
+sudo install -Dm644 gmm.1 /usr/local/share/man/man1/gmm.1   # optional: man page
 ```
 
-Requirements:
-
-* `ghc`
-* `gcc` or `clang`
-
-must be available in `PATH`.
-
-## Windows
-
-Build normally:
+On Windows:
 
 ```powershell
-go build -o gmm.exe .
+go build -o gmm.exe main.go
 ```
 
-On its first execution, `gmm` checks whether the required toolchains are installed.
+## Toolchain setup
 
-If they are missing, `gmm` automatically downloads and unpacks the official GHC bindist into its installation directory (`Ghc/`), alongside a generated `sit.txt` that records the resolved tool paths.
+On every build `gmm` needs a GHC and a C compiler. It looks for them in this order:
 
-> **Administrator privileges and an internet connection are required only during the first setup.**
+1. `GMM_GHC` in the environment (with `GMM_CC` / `GMM_LLVM` if set).
+2. A `sit.txt` file in an installation directory (it records the resolved `GHC=`, `CC=` and `LLVM=` paths).
+3. A `Ghc/` directory inside an installation directory.
+4. Otherwise: **download and unpack GHC 9.12.4** for the host platform into `Ghc/` of the first writable installation directory, and write `sit.txt`.
 
-After the initial installation completes successfully, `gmm` can be used normally without administrator privileges.
+Installation directories, first writable one wins:
+
+| Platform | Directories |
+| --- | --- |
+| any | `$GMM_HOME`, if set (the only one tried) |
+| Linux / macOS | `/usr/local/bin/gmm`, then `~/.local/share/gmm` |
+| Windows | `%ProgramFiles(x86)%\gmm` |
+
+Automatic download is available for Windows x86_64, Linux x86_64, Linux aarch64 and macOS arm64. For Windows arm64 and macOS x86_64 no bindist is published; install GHC yourself and set `GMM_GHC`.
+
+> **Network access is required only for the first setup**, and so are write permissions to the installation directory (administrator rights on Windows, or root for `/usr/local/bin/gmm`; without root, gmm falls back to `~/.local/share/gmm` on Linux). `gmm -n` (dry run) never downloads anything.
+
+A system `ghc` found in `PATH` is **not** picked up automatically; use `GMM_GHC=$(which ghc)` to use it. The C compiler, by contrast, is found in `PATH` (`gcc`, then `clang`, then `cc`) unless `GMM_CC` is set.
+
+Run `gmm doctor` at any time to see what was found (see [Doctor](#doctor)).
 
 ## Building every platform
 
 ```bash
-./build.sh          # → dist/gmm-linux-amd64, dist/gmm-linux-arm64, dist/gmm-windows-amd64
+./build.sh          # → build/
+./build.sh clean    # delete build/
 ```
+
+Run it next to `main.go`, `go.mod`, `libgmm/` and `gmm.1`. It produces:
+
+```text
+build/gmm                              executable for this machine
+build/gmm.exe                          Windows x86_64
+build/gmm-<ver>-linux-<arch>.tar.xz    binary + man page + Readme
+build/gmm_<ver>_<arch>.deb
+build/gmm-<ver>-1.<arch>.rpm
+build/gmm_<ver>_<arch>.apk
+```
+
+The version is read from `main.go`. The `.deb`, `.rpm` and `.apk` files are built with [nfpm](https://nfpm.goreleaser.com); if it is missing, the script installs it with `go install` (needs network) and otherwise skips those three formats. Set `GMM_LICENSE=<name>` to record a license in the packages.
 
 `libgmm/` is embedded into the executable using Go's `embed` package and extracted automatically into a temporary directory at runtime. It is removed when the process exits.
 
@@ -171,27 +210,51 @@ USAGE:
   gmm [flags] bc | -bc
   gmm [flags] run | -r [executable]
   gmm [flags] br | -br
+  gmm [flags] watch | -w
+  gmm [flags] clean | -clean
+  gmm [flags] init | -init
+  gmm doctor | -doctor
 ```
 
-## Command Line Flags & Commands
+Running `gmm` with no input file prints a short error and a pointer to `gmm -h`, not the full help.
 
-| Flag / Command | Type | Description |
-| --- | --- | --- |
-| `-o <file>` | Flag | Output binary name. With no `-o`, the default is `a.out`. |
-| `-o C="<target>"` | Flag | Output format. See [Targets](#targets) below. |
-| `-I <path>` | Flag | Add an include directory for headers. Repeatable. |
-| `-D <name[=val]>` | Flag | Define a preprocessor macro. Repeatable. |
-| `-S` | Flag | Emit assembly (`.s`) instead of building an executable/library. |
-| `-b`, `build` | Command/Flag | Build project using configuration from `conf.hmm`. |
-| `-bc`, `bc` | Command/Flag | Build using `conf.hmm` and clean the `.o` files this run created. |
-| `-r`, `-run`, `run` | Command/Flag | Run the output executable, or a named one. |
-| `-br`, `br` | Command/Flag | Build using `conf.hmm` and immediately execute the binary. |
-| `-libs <libs>` | Flag | Comma-separated system libraries or paths to link with. Repeatable. |
-| `-keep-obj` | Flag | Keep intermediate object files (`.o`) after linking. |
-| `-llvm` | Flag | Use the GHC LLVM backend (`-fllvm`) during C-- compilation. |
-| `-rts` | Flag | Use GHC directly as the linker driver instead of `cc`. |
-| `-v`, `-version` | Flag | Display version and developer information. |
-| `-h`, `-help` | Flag | Display help message and exit. |
+## Commands
+
+| Command | Description |
+| --- | --- |
+| `build`, `b`, `-b` | Build the project described by `conf.hmm`. |
+| `bc`, `-bc` | Build using `conf.hmm` and clean the `.o` files this run created. |
+| `run`, `r`, `-r`, `-run` | Run the output executable, or a named one. Combined with a build command, runs it after a successful build. |
+| `br`, `-br` | Build using `conf.hmm` and immediately execute the binary. |
+| `watch`, `w`, `-w`, `-watch` | Rebuild whenever the source, a header or `conf.hmm` changes. With `-r`, also run after every successful build. |
+| `clean`, `-clean` | Remove the files gmm produces for this project (objects and output). |
+| `init`, `-init` | Write a `conf.hmm` from the current command line. |
+| `doctor`, `-doctor` | Check the toolchain and environment, then exit. |
+
+## Flags
+
+| Flag | Description |
+| --- | --- |
+| `-o <file>` | Output binary name. With no `-o`, the default is `a.out`. |
+| `-o C="<target>"` | Output format. See [Targets](#targets). |
+| `-I <path>` | Add an include directory for headers. Repeatable. |
+| `-D <name[=val]>` | Define a preprocessor macro. Repeatable. |
+| `-S` | Emit assembly (`.s`) instead of building an executable/library. |
+| `-libs <libs>` | Comma-separated system libraries or paths to link with. Repeatable. |
+| `-keep-obj` | Keep intermediate object files (`.o`) after linking. |
+| `-llvm` | Use the GHC LLVM backend (`-fllvm`) during C-- compilation. |
+| `-rts` | Use GHC directly as the linker driver instead of `cc`. |
+| `-opt <0\|1\|2>` | Optimization level handed to GHC (`-O0`, `-O1`, `-O2`). |
+| `-ghc-opt <flags>` | Extra comma-separated flags passed straight to GHC. Repeatable. |
+| `-ld-opt <flags>` | Extra comma-separated flags passed to the linker. Repeatable. |
+| `-strip` | Strip symbols from the linked output. |
+| `-arg <value>` | Argument given to the program started by `-r` / `-br`. Repeatable. |
+| `-f`, `-force` | Let `init` overwrite an existing `conf.hmm`. |
+| `-n`, `-dry-run` | Print the commands that would run without running anything. |
+| `-time` | Print how long each build phase took. |
+| `-verbose` | Echo every external command before it runs. |
+| `-v`, `-version` | Display version and developer information. |
+| `-h`, `-help` | Display help message and exit. |
 
 ### Argument order
 
@@ -209,7 +272,64 @@ gmm -o app helper.o main.cmm
 gmm -o app main.cmm helper.o
 ```
 
-`gmm -br` and `gmm -r NAME` propagate the built program's exit code, so they compose with shell scripts and CI.
+Extra positional files ending in `.so`, `.a`, `.dll` or `.lib` are linked as libraries; anything else is treated as an extra object file.
+
+### Flags with commas
+
+`-libs`, `-ghc-opt` and `-ld-opt` split their value at commas, and there is no escape for a comma. A flag such as `-Wl,-Bsymbolic` would therefore reach the compiler broken in two. Pass linker flags with `-Xlinker` instead, one option per use:
+
+```bash
+gmm -ld-opt=-Xlinker -ld-opt=-Bsymbolic -o C="so" -o app main.cmm
+```
+
+### Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Success (also `Ctrl-C` in watch mode). |
+| `1` | Build, link or configuration error; failed `doctor` check; `init` refusing to overwrite. |
+| `2` | Invalid command line. |
+| `127` | `run` could not find the program to execute. |
+
+`gmm -br` and `gmm -r NAME` return the built program's own exit code, so they compose with shell scripts and CI. `Ctrl-C` during a run goes to the program, not to `gmm`.
+
+## Watch mode
+
+```bash
+gmm -w -r            # rebuild and rerun on every change
+```
+
+`gmm` fingerprints the input file, the quoted `#include` files it can find (recursively), the C sources and `conf.hmm`, polls twice a second, and rebuilds when anything changes. A failed build is reported and the watcher keeps waiting. `Ctrl-C` stops it.
+
+## Clean and init
+
+```bash
+gmm clean            # remove objects and the output
+gmm -n clean         # only show what would be removed
+gmm -init -o app -opt 2 -libs m main.cmm   # write conf.hmm
+gmm -init -f ...     # overwrite an existing conf.hmm
+```
+
+`clean` never touches your sources, C files or pre-built objects. `init` defaults the input to `main.cmm` and writes exactly the keys listed in [conf.hmm](#confhmm-api-specification) from the current command line.
+
+## Doctor
+
+`gmm doctor` prints a report and exits with status 1 if a required tool is missing:
+
+* the gmm version and host platform;
+* the GHC, C compiler and (optional) LLVM tools: path, version, OK or FAIL — or a note that the toolchain will be downloaded on the first build;
+* the `GMM_*` variables and installation directories;
+* on Linux/macOS, which linkers (`ld.gold`, `ld.bfd`, `ld.lld`) are available;
+* which targets are supported on this host;
+* the number of embedded library files.
+
+## Debugging a build
+
+```bash
+gmm -n main.cmm              # show every command, run nothing
+gmm -verbose -time main.cmm  # echo commands and print phase timings
+gmm -S main.cmm              # emit assembly (main.s)
+```
 
 ## Targets
 
@@ -217,7 +337,7 @@ gmm -o app main.cmm helper.o
 
 | Target | Produces | Extension |
 | --- | --- | --- |
-| `native` | plain executable for this host (default) | none |
+| `native` | plain executable for this host (default) | none (`.exe` on Windows) |
 | `exe` | Windows PE executable | `.exe` |
 | `dll` | Windows PE shared library | `.dll` |
 | `linux` | Linux ELF executable | `.elf` |
@@ -225,20 +345,29 @@ gmm -o app main.cmm helper.o
 
 Aliases: `host` → `native`, `windows`/`pe` → `exe`, `elf` → `linux`, `shared` → `so`.
 
-Combine both `-o` forms to pick the format and the name:
+Combine both `-o` forms to pick the format and the name. With no name, the input's base name is used:
 
 ```bash
 gmm -o C="linux" -o app main.cmm      # → app.elf
-gmm -o C="so" -o libapp main.cmm       # → libapp.so  (see note below)
+gmm -o C="so" -o libapp main.cmm       # → libapp.so
+gmm -o C="so" main.cmm                 # → main.so
 ```
 
-> ⚠️ **gmm does not cross-compile.** The toolchain produces objects for its own platform, so requesting a target for another OS is refused with an explanation rather than silently emitting a host binary under a foreign name. On Linux, `-o C="exe"` and `-o C="dll"` will error; use `native` or `linux`.
+Shared objects and DLLs are built but never run by `-r` (a warning is printed instead).
 
-> ⚠️ **`so` may require the LLVM backend.** GHC's native code generator does not always emit position-independent code, so a shared object that references static data can fail to link. When that happens, gmm reports it and suggests the fix:
+> ⚠️ **gmm does not cross-compile.** A target for another OS is refused with an explanation rather than silently emitting a host binary under a foreign name. On Linux, `-o C="exe"` and `-o C="dll"` will error; use `native` or `linux`. A Windows executable from Linux needs a Windows-targeting GHC (via `GMM_GHC`) and a way to run it, such as Wine.
+
+> ⚠️ **`so` may fail to link.** GHC's native code generator does not always emit position-independent code, so a shared object that references static data in the same file can fail with `relocation R_X86_64_PC32 against symbol ... can not be used when making a shared object`. Two fixes, and gmm suggests the first one itself:
 
 ```bash
+# 1. LLVM backend (needs LLVM `opt`, versions 13–20)
 gmm -llvm -o C="so" -o libapp main.cmm
+
+# 2. let the linker bind the library's own symbols locally
+gmm -ld-opt=-Xlinker -ld-opt=-Bsymbolic -o C="so" -o libapp main.cmm
 ```
+
+The second means functions in the library cannot be overridden by another library loaded earlier.
 
 ---
 
@@ -248,11 +377,13 @@ gmm -llvm -o C="so" -o libapp main.cmm
 
 ## Syntax Rules
 
-* One `key = value` pair per line.
+* One `key = value` pair per line; a line without `=` is an error that names the file and line.
 * Comments start with `#` or `;`. Blank lines are ignored.
 * Whitespace around keys and values is optional.
+* Keys are case-insensitive.
 * List values are comma-separated.
 * Values may be quoted.
+* Booleans accept `true`/`false`, `yes`/`no`, `on`/`off`, `1`/`0`. A boolean key can only switch an option **on**: an option already enabled on the command line is never switched off by `false` in the file.
 
 ## Available Keys
 
@@ -266,10 +397,15 @@ gmm -llvm -o C="so" -o libapp main.cmm
 | `defines` | `defs` | Preprocessor macro definitions. |
 | `libs` | `libraries` | Libraries to link with. |
 | `objs` | `objects`, `extraobjs` | Pre-compiled objects or archives. |
+| `opt` | `optimize` | Optimization level: `0`, `1` or `2`. |
+| `ghcopts` | `ghc-opts` | Extra GHC flags. |
+| `ldopts` | `ld-opts` | Extra linker flags. |
+| `args` | `runargs` | Arguments for the program started by `run`. `-arg` on the command line wins. |
 | `keepobj` | `keep-obj` | `true`/`false`; keep generated `.o` files. |
 | `emitasm` | `asm` | `true`/`false`; emit assembly instead of linking. |
 | `llvm` | — | `true`/`false`; use the LLVM backend. |
 | `rts` | — | `true`/`false`; link with GHC as the driver. |
+| `strip` | — | `true`/`false`; strip symbols from the output. |
 | `run` | — | `true`/`false`; run the binary after building. |
 
 Unknown keys are ignored, so a config written for a newer gmm still loads.
@@ -282,18 +418,21 @@ Unknown keys are ignored, so a config written for a newer gmm still loads.
 input  = main.cmm
 output = app
 target = native
+opt    = 2
 
 cfiles   = helper.c
 includes = ., include
 defines  = DEBUG, LEVEL=2
 libs     = m, pthread
+args     = --verbose, input.txt
 
 keepobj = false
+strip   = true
 ```
 
 Add a line like `objs = linkL.o` when your build needs a pre-compiled object; every listed object must exist, and a missing one is reported by name rather than at link time.
 
-`gmm` looks for `conf.hmm` next to the input file first, then in the current directory. Command-line flags override values from the file, and command-line values from multiple flags accumulate rather than overwrite.
+`gmm` looks for `conf.hmm` next to the input file first, then in the current directory. Command-line flags override values from the file, and command-line values from multiple flags accumulate rather than overwrite (command-line include directories, macros and libraries come first).
 
 ---
 
@@ -368,7 +507,7 @@ printf '1\n2 1 1 2\n1\n2\n1 2 1\n' | ./dijkstra
 
 ## gmm vs. plain ghc
 
-| Feature | Plain `ghc` | `gmm 4.0` |
+| Feature | Plain `ghc` | `gmm 4.1` |
 | --- | --- | --- |
 | Standalone Cmm compilation | ✅ | ✅ |
 | RTS-free native binaries | ❌ | ✅ |
@@ -376,20 +515,25 @@ printf '1\n2 1 1 2\n1\n2\n1 2 1\n' | ./dijkstra
 | Automatic header discovery | ❌ | ✅ |
 | Embedded `stdc--.h` v3.0.0 | ❌ | ✅ |
 | Embedded `cmmath.h` v1.0.4 | ❌ | ✅ |
-| Project configuration (`conf.hmm`) | ❌ | ✅ |
+| Project configuration (`conf.hmm`, `init`) | ❌ | ✅ |
 | Integrated execution (`-r`, `-br`) | ❌ | ✅ |
+| Watch mode (`-w`) | ❌ | ✅ |
 | Exit code propagation | ❌ | ✅ |
-| Scoped Obj cleanup (`-bc`) | ❌ | ✅ |
+| Scoped Obj cleanup (`-bc`, `clean`) | ❌ | ✅ |
+| Environment check (`doctor`) | ❌ | ✅ |
+| Dry run and build timings (`-n`, `-time`) | ❌ | ✅ |
 | Cross compilation | ❌ | ❌ (refuses, rather than lying) |
 | Linux support | ✅ | ✅ |
+| macOS support (arm64) | ✅ | ✅ |
 | Windows support | ✅ | ✅ |
-| Automatic toolchain installation | ❌ | ✅ (Windows) |
+| Automatic toolchain installation | ❌ | ✅ |
+| Packages (deb, rpm, apk, tar.xz, exe) and man page | ❌ | ✅ |
 | One-command build & run | ❌ | ✅ |
 
 > ⚠️ **Use `mexit(0);` or `foreign "C" exit(0);` to terminate `main()`, not `return (0);`.**
 > A bare Cmm-level `return` from `main` follows GHC's STG calling convention, which expects a stack frame normally created by the Haskell RTS. Without that frame, the program may crash after producing the correct output. This behavior is inherited from GHC itself and is not specific to `gmm`.
 
-> ⚠️ **`-llvm` and `-rts` depend on your installation.** `-llvm` needs LLVM tools matching the GHC version, and `-rts` needs the GHC RTS libraries (notably `libgmp`). Both report a clear error and a hint when the dependency is missing.
+> ⚠️ **`-llvm` and `-rts` depend on your installation.** `-llvm` needs LLVM tools matching the GHC version (13–20 for GHC 9.12), and `-rts` needs the GHC RTS libraries (notably `libgmp`). Both report a clear error and a hint when the dependency is missing.
 
 ---
 
@@ -402,6 +546,19 @@ printf '1\n2 1 1 2\n1\n2\n1 2 1\n' | ./dijkstra
 | `ret.h` | — | Calling-convention macros used by `stdc--.h` for tail calls and returns. |
 
 All files are embedded into the `gmm` executable and extracted automatically at runtime. `cmmath.c` is only compiled when your source includes `cmmath.h`, so programs that don't use math never pay for it.
+
+---
+
+# Manual page
+
+The full reference lives in the `gmm(1)` manual page (`gmm.1` in this repository):
+
+```bash
+man gmm            # after installing a package
+man ./gmm.1        # straight from the source tree
+```
+
+It covers every command, flag, `conf.hmm` key, target, environment variable, exit code and the toolchain lookup in detail.
 
 ---
 
