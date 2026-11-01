@@ -12,7 +12,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -27,7 +29,7 @@ var libFS embed.FS
 const (
 	Author     = "DASKR"
 	Repository = "https://github.com/DASKR515/C-minus-minus"
-	Version    = "4.0"
+	Version    = "4.1"
 
 	ghcWinURL   = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-unknown-mingw32-int_native.tar.xz"
 	ghcLinuxURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-deb11-linux.tar.xz"
@@ -68,6 +70,13 @@ type Config struct {
 	RunAfter   bool
 	EmitASM    bool
 	Verbose    bool
+	Strip      bool
+	Timings    bool
+	Watch      bool
+	OptLevel   string // "", "0", "1", "2"
+	GHCOpts    []string
+	LDOpts     []string
+	RunArgs    []string
 }
 
 func (c Config) IsShared() bool {
@@ -134,6 +143,105 @@ func (pw *ProgressWriter) Finish() {
 	fmt.Printf("\r 🚀 %s (%.2f MB) done\n", pw.Label, float64(pw.Downloaded)/(1024*1024))
 }
 
+// execMode is set once from the command line and consulted by every helper
+// that starts an external process, so -verbose and -n behave the same
+// everywhere without threading the whole Config through each call.
+var execMode struct {
+	Verbose bool
+	DryRun  bool
+}
+
+// errReported marks a failure whose details were already shown to the user
+// (GHC's own diagnostics, for instance), so main does not print a second line.
+var errReported = errors.New("build failed")
+
+func quoteCommand(name string, args []string) string {
+	parts := make([]string, 0, len(args)+1)
+	for _, p := range append([]string{name}, args...) {
+		if p == "" || strings.ContainsAny(p, " \t\"'") {
+			p = strconv.Quote(p)
+		}
+		parts = append(parts, p)
+	}
+	return strings.Join(parts, " ")
+}
+
+// echoCommand shows a command before it runs (-verbose) or instead of running
+// it (-n). It returns true when the caller must skip the real execution.
+func echoCommand(name string, args []string) bool {
+	if execMode.DryRun {
+		fmt.Println("[dry-run]", quoteCommand(name, args))
+		return true
+	}
+	if execMode.Verbose {
+		fmt.Fprintln(os.Stderr, "+", quoteCommand(name, args))
+	}
+	return false
+}
+
+// ensureDir creates dir unless it is the current directory or -n is active.
+func ensureDir(dir string) error {
+	if dir == "" || dir == "." || execMode.DryRun {
+		return nil
+	}
+	return os.MkdirAll(dir, 0755)
+}
+
+// isExitError reports whether err means the tool ran and returned a failure
+// status (its own diagnostics are already on screen) rather than failing to start.
+func isExitError(err error) bool {
+	var exitErr *exec.ExitError
+	return errors.As(err, &exitErr)
+}
+
+// toolFailure keeps the short message for a tool that ran and failed, and adds
+// the cause when the tool could not even be started.
+func toolFailure(what string, err error) error {
+	if isExitError(err) {
+		return errors.New(what)
+	}
+	return fmt.Errorf("%s: %v", what, err)
+}
+
+// Stopwatch records how long each build phase took (-time).
+type Stopwatch struct {
+	Enabled bool
+	started time.Time
+	mark    time.Time
+	laps    []stopwatchLap
+}
+
+type stopwatchLap struct {
+	Name string
+	Took time.Duration
+}
+
+func newStopwatch(enabled bool) *Stopwatch {
+	now := time.Now()
+	return &Stopwatch{Enabled: enabled, started: now, mark: now}
+}
+
+// Lap closes the current phase and starts the next one.
+func (s *Stopwatch) Lap(name string) {
+	if !s.Enabled {
+		return
+	}
+	now := time.Now()
+	s.laps = append(s.laps, stopwatchLap{Name: name, Took: now.Sub(s.mark)})
+	s.mark = now
+}
+
+func (s *Stopwatch) Report() {
+	if !s.Enabled || len(s.laps) == 0 {
+		return
+	}
+	fmt.Println("Timings:")
+	for _, l := range s.laps {
+		fmt.Printf("  %-10s %s\n", l.Name, l.Took.Round(time.Millisecond))
+	}
+	fmt.Printf("  %-10s %s\n", "total", time.Since(s.started).Round(time.Millisecond))
+}
+
 func printHelp() {
 	helpText := fmt.Sprintf(`GMM (GHC C-- Manager) v%s - Build tool and compiler driver for C-- projects.
 Developed by: %s
@@ -145,6 +253,10 @@ USAGE:
   gmm [flags] bc | -bc
   gmm [flags] run | -r [executable]
   gmm [flags] br | -br
+  gmm [flags] watch | -w
+  gmm [flags] clean | -clean
+  gmm [flags] init | -init
+  gmm doctor | -doctor
 
 FLAGS:
   -o <file>        Specify output binary name or target format (e.g. -o app or -o C="dll").
@@ -169,6 +281,20 @@ FLAGS:
   -keep-obj        Keep intermediate object files (.o) after linking instead of deleting them.
   -llvm            Use GHC LLVM backend (-fllvm) during C-- compilation.
   -rts             Use GHC directly as the linker driver instead of system C compiler (CC).
+  -opt <0|1|2>     Optimization level handed to GHC (-O0, -O1, -O2).
+  -ghc-opt <f>     Comma-separated extra flags passed straight to GHC. Can be used multiple times.
+  -ld-opt <f>      Comma-separated extra flags passed to the linker. Can be used multiple times.
+  -strip           Strip symbols from the linked output.
+  -arg <value>     Argument given to the program started by -r / -br. Can be used multiple times.
+  -w, -watch       Rebuild whenever the source, a header or conf.hmm changes (Ctrl-C to stop).
+                   Combine with -r to run the program after every successful build.
+  -clean           Remove the files gmm produces for this project (objects and the output).
+  -init            Write a conf.hmm from the current command line.
+  -f, -force       Let -init overwrite an existing conf.hmm.
+  -n, -dry-run     Print the commands that would run without running anything.
+  -time            Print how long each build phase took.
+  -verbose         Echo every external command before it runs.
+  -doctor          Check the toolchain and the environment, then exit.
   -v, -version     Display version and developer information.
   -h, -help        Display this help message and exit.
 
@@ -177,6 +303,8 @@ CONF.HMM KEYS:
   includes=<d1,d2>          defines=<D1,D2>          cfiles=<a.c,b.c>
   libs=<m,pthread>          keepobj=<true|false>     emitasm=<true|false>
   llvm=<true|false>         rts=<true|false>         run=<true|false>
+  opt=<0|1|2>               strip=<true|false>       args=<a1,a2>
+  ghcopts=<f1,f2>           ldopts=<f1,f2>           objs=<a.o,b.o>
 
 ENVIRONMENT:
   GMM_HOME      Installation directory that holds 'Ghc/' and 'sit.txt'.
@@ -517,6 +645,10 @@ func setupEnvironment() (ToolPaths, error) {
 		}
 	}
 
+	if execMode.DryRun {
+		return ToolPaths{}, errors.New("the GHC toolchain is not installed and -n will not download it (run gmm once without -n)")
+	}
+
 	baseDir := ""
 	for _, dir := range candidates {
 		if dirIsWritable(dir) {
@@ -802,6 +934,18 @@ type cliFlags struct {
 	runCmd      bool
 	buildRun    bool
 	help        bool
+	optLevel    string
+	ghcOpts     arrayFlags
+	ldOpts      arrayFlags
+	runArgs     []string
+	strip       bool
+	timings     bool
+	dryRun      bool
+	watch       bool
+	clean       bool
+	initCmd     bool
+	force       bool
+	doctor      bool
 
 	positional []string
 }
@@ -884,6 +1028,61 @@ func flagSpecs() []flagSpec {
 		{names: []string{"h", "help"}, boolean: true, assigned: func(c *cliFlags, v string) error {
 			b, err := strconv.ParseBool(v)
 			c.help = b
+			return err
+		}},
+		{names: []string{"opt", "optimize"}, assigned: func(c *cliFlags, v string) error {
+			level, err := normalizeOptLevel(v)
+			c.optLevel = level
+			return err
+		}},
+		{names: []string{"ghc-opt", "ghcopt"}, assigned: func(c *cliFlags, v string) error {
+			return c.ghcOpts.Set(v)
+		}},
+		{names: []string{"ld-opt", "ldopt"}, assigned: func(c *cliFlags, v string) error {
+			return c.ldOpts.Set(v)
+		}},
+		{names: []string{"arg", "args"}, assigned: func(c *cliFlags, v string) error {
+			c.runArgs = append(c.runArgs, v)
+			return nil
+		}},
+		{names: []string{"strip"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.strip = b
+			return err
+		}},
+		{names: []string{"time", "timings"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.timings = b
+			return err
+		}},
+		{names: []string{"n", "dry-run", "dryrun"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.dryRun = b
+			return err
+		}},
+		{names: []string{"w", "watch"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.watch = b
+			return err
+		}},
+		{names: []string{"clean"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.clean = b
+			return err
+		}},
+		{names: []string{"init"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.initCmd = b
+			return err
+		}},
+		{names: []string{"f", "force"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.force = b
+			return err
+		}},
+		{names: []string{"doctor"}, boolean: true, assigned: func(c *cliFlags, v string) error {
+			b, err := strconv.ParseBool(v)
+			c.doctor = b
 			return err
 		}},
 	}
@@ -1059,6 +1258,18 @@ func normalizeTargetType(target string) (string, error) {
 	}
 }
 
+// normalizeOptLevel canonicalises the value of -opt: "2", "O2" and "-O2" all
+// select GHC's -O2. An empty value keeps the GHC default.
+func normalizeOptLevel(level string) (string, error) {
+	l := strings.ToLower(strings.TrimSpace(trimQuotes(level)))
+	l = strings.TrimPrefix(strings.TrimPrefix(l, "-"), "o")
+	switch l {
+	case "", "0", "1", "2":
+		return l, nil
+	}
+	return "", fmt.Errorf("unknown optimization level %q (expected one of: 0, 1, 2)", level)
+}
+
 // targetPlatform reports the OS a target belongs to. An empty result means the
 // target follows the host.
 func targetPlatform(target string) string {
@@ -1135,7 +1346,7 @@ func dedupeStrings(in []string) []string {
 	return out
 }
 
-func executeBinary(binPath string) int {
+func executeBinary(binPath string, runArgs []string) int {
 	cleanPath := filepath.Clean(binPath)
 	if runtime.GOOS == "windows" {
 		if !strings.HasSuffix(strings.ToLower(cleanPath), ".exe") &&
@@ -1148,15 +1359,25 @@ func executeBinary(binPath string) int {
 		cleanPath = "." + string(os.PathSeparator) + cleanPath
 	}
 
+	if echoCommand(cleanPath, runArgs) {
+		return 0
+	}
+
 	if _, err := os.Stat(cleanPath); err != nil {
 		fmt.Fprintf(os.Stderr, "error: cannot run %s: %v\n", binPath, err)
 		return 127
 	}
 
-	cmd := exec.Command(cleanPath)
+	cmd := exec.Command(cleanPath, runArgs...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
+
+	// Ctrl-C is meant for the program being run: wait for it instead of dying
+	// first, so gmm can still report its exit code and clean up after it.
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	defer signal.Stop(sig)
 
 	if err := cmd.Run(); err != nil {
 		var exitErr *exec.ExitError
@@ -1174,6 +1395,10 @@ func executeBinary(binPath string) int {
 
 // runFilteredGHC runs GHC and synchronously filters libtinfo warnings from Stderr
 func runFilteredGHC(binPath string, args ...string) error {
+	if echoCommand(binPath, args) {
+		return nil
+	}
+
 	cmd := exec.Command(binPath, args...)
 	cmd.Stdout = os.Stdout
 
@@ -1206,6 +1431,10 @@ func runFilteredGHC(binPath string, args ...string) error {
 // runTool streams the output of an external tool and remembers its stderr so a
 // confusing linker message can be turned into an actionable hint.
 func runTool(name string, args ...string) error {
+	if echoCommand(name, args) {
+		return nil
+	}
+
 	var stderr strings.Builder
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = os.Stdout
@@ -1308,15 +1537,20 @@ func findConfigFile(inputFile string) string {
 	return ""
 }
 
+// parseBoolValue merges a boolean conf.hmm key into dst. A key can only turn an
+// option on: an option already enabled on the command line (-llvm, -br, ...)
+// is never switched off again by a "false" stored in conf.hmm.
 func parseBoolValue(key, val string, dst *bool) error {
+	var on bool
 	switch strings.ToLower(val) {
 	case "1", "true", "yes", "on":
-		*dst = true
+		on = true
 	case "0", "false", "no", "off":
-		*dst = false
+		on = false
 	default:
 		return fmt.Errorf("%s expects a boolean value, got %q", key, val)
 	}
+	*dst = *dst || on
 	return nil
 }
 
@@ -1391,6 +1625,26 @@ func parseHMMFile(filename string, cfg *Config) error {
 			keyErr = parseBoolValue(key, val, &cfg.UseRTS)
 		case "run":
 			keyErr = parseBoolValue(key, val, &cfg.RunAfter)
+		case "strip":
+			keyErr = parseBoolValue(key, val, &cfg.Strip)
+		case "opt", "optimize":
+			if cfg.OptLevel == "" {
+				level, lerr := normalizeOptLevel(val)
+				if lerr != nil {
+					keyErr = fmt.Errorf("%s:%d: %v", filename, line, lerr)
+					break
+				}
+				cfg.OptLevel = level
+			}
+		case "ghcopts", "ghc-opts":
+			cfg.GHCOpts = append(cfg.GHCOpts, splitList(val)...)
+		case "ldopts", "ld-opts":
+			cfg.LDOpts = append(cfg.LDOpts, splitList(val)...)
+		case "args", "runargs":
+			// Arguments given with -arg on the command line win.
+			if len(cfg.RunArgs) == 0 {
+				cfg.RunArgs = splitList(val)
+			}
 		default:
 			// Unknown keys are ignored so newer config files stay loadable.
 		}
@@ -1431,6 +1685,17 @@ func needsCMath(src string) bool {
 	}
 	content := string(data)
 	return strings.Contains(content, "cmmath.h") || strings.Contains(content, "cmmath.c")
+}
+
+// mathObjPath is where the cmmath object of a build is written. It avoids
+// clobbering the C-- object when the input itself is named cmmath.cmm, which
+// would otherwise produce duplicate symbol errors.
+func mathObjPath(inputDir, baseName string) string {
+	name := "cmmath.o"
+	if baseName == "cmmath" {
+		name = "cmmath_lib.o"
+	}
+	return filepath.Join(inputDir, name)
 }
 
 func compileMathLib(cc, tempDir, output string) error {
@@ -1487,6 +1752,9 @@ func ghcCommonArgs(includePath string, cfg Config) []string {
 	if cfg.UseLLVM {
 		args = append(args, "-fllvm")
 	}
+	if cfg.OptLevel != "" {
+		args = append(args, "-O"+cfg.OptLevel)
+	}
 	if cfg.IsShared() {
 		args = append(args, "-fPIC")
 	}
@@ -1504,14 +1772,13 @@ func ghcCommonArgs(includePath string, cfg Config) []string {
 			args = append(args, "-optc", "-D"+def)
 		}
 	}
+	args = append(args, cfg.GHCOpts...)
 	return args
 }
 
 func compileToASM(ghc, input, output, includePath string, cfg Config) error {
-	if dir := filepath.Dir(output); dir != "." && dir != "" {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return err
-		}
+	if err := ensureDir(filepath.Dir(output)); err != nil {
+		return err
 	}
 
 	args := append([]string{"-S"}, ghcCommonArgs(includePath, cfg)...)
@@ -1521,10 +1788,8 @@ func compileToASM(ghc, input, output, includePath string, cfg Config) error {
 }
 
 func compileWithGHC(ghc, input, output, includePath string, cfg Config) error {
-	if dir := filepath.Dir(output); dir != "." && dir != "" {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return err
-		}
+	if err := ensureDir(filepath.Dir(output)); err != nil {
+		return err
 	}
 
 	args := append([]string{"-c"}, ghcCommonArgs(includePath, cfg)...)
@@ -1567,6 +1832,13 @@ func linkWithGHC(ghc string, objs []string, output string, libs []string, cfg Co
 	if linker := defaultLinkerKind(); linker != "" {
 		args = append(args, "-optl-fuse-ld="+linker)
 	}
+	if cfg.Strip {
+		args = append(args, "-optl-s")
+	}
+	args = append(args, cfg.GHCOpts...)
+	for _, opt := range cfg.LDOpts {
+		args = append(args, "-optl"+opt)
+	}
 
 	return runFilteredGHC(ghc, args...)
 }
@@ -1589,11 +1861,12 @@ func defaultLinkerKind() string {
 	return ""
 }
 
-func linkWithCC(cc string, objs []string, output string, libs []string, target string) error {
+func linkWithCC(cc string, objs []string, output string, libs []string, cfg Config) error {
 	if strings.TrimSpace(cc) == "" {
 		return errors.New("no C compiler available for linking (set GMM_CC or install gcc/clang)")
 	}
 
+	target := cfg.TargetType
 	args := append([]string{}, objs...)
 
 	if target == "so" || target == "dll" {
@@ -1618,8 +1891,498 @@ func linkWithCC(cc string, objs []string, output string, libs []string, target s
 	if runtime.GOOS != "windows" {
 		args = append(args, "-lm", "-lc")
 	}
+	if cfg.Strip {
+		args = append(args, "-s")
+	}
+	args = append(args, cfg.LDOpts...)
 
 	return runTool(cc, args...)
+}
+
+// ---------------------------------------------------------------------------
+// Build driver
+// ---------------------------------------------------------------------------
+
+func emitAssembly(cfg Config, tp ToolPaths, tempDir, inputDir, baseName string) error {
+	var created []Artifact
+
+	asmOutput := filepath.Join(inputDir, baseName+".s")
+	if cfg.OutputSet && cfg.Output != "" && cfg.Output != DefaultTargetOutput {
+		asmOutput = cfg.Output
+	}
+	trackArtifact(asmOutput, &created)
+	if cerr := compileToASM(tp.GHC, cfg.InputFile, asmOutput, tempDir, cfg); cerr != nil {
+		cleanupArtifacts(created, false)
+		return toolFailure("generating assembly failed", cerr)
+	}
+	fmt.Printf("Assembly output saved to %s\n", asmOutput)
+	return nil
+}
+
+// buildOnce compiles and links the project one time. Every failure is returned
+// instead of exiting, so the caller can clean up and -watch can keep going.
+func buildOnce(cfg Config, tp ToolPaths, tempDir, inputDir, baseName string, sw *Stopwatch) (err error) {
+	if cfg.EmitASM {
+		err = emitAssembly(cfg, tp, tempDir, inputDir, baseName)
+		sw.Lap("assembly")
+		return err
+	}
+
+	var created []Artifact
+	defer func() {
+		// A failed build never leaves half written objects behind, even
+		// with -keep-obj.
+		cleanupArtifacts(created, err == nil && cfg.KeepObj)
+	}()
+
+	mainObjFile := filepath.Join(inputDir, baseName+".o")
+	trackArtifact(mainObjFile, &created)
+	if cerr := compileWithGHC(tp.GHC, cfg.InputFile, mainObjFile, tempDir, cfg); cerr != nil {
+		if !isExitError(cerr) {
+			return toolFailure("running GHC failed", cerr)
+		}
+		if cfg.UseLLVM {
+			return fmt.Errorf("compiling with the LLVM backend failed\n"+
+				"hint: GHC needs LLVM %s; install it or point GMM_LLVM at a working 'opt' binary", llvmVersionRange)
+		}
+		return errReported
+	}
+	sw.Lap("compile")
+
+	compiledCObjs, cerr := compileCFiles(tp.CC, cfg.CFiles, tempDir, cfg.Includes, cfg.Defines, cfg.IsShared(), &created)
+	if cerr != nil {
+		return cerr
+	}
+	sw.Lap("c files")
+
+	linkObjs := []string{mainObjFile}
+	linkObjs = append(linkObjs, compiledCObjs...)
+
+	if needsCMath(cfg.InputFile) {
+		mathObj := mathObjPath(inputDir, baseName)
+		trackArtifact(mathObj, &created)
+		if merr := compileMathLib(tp.CC, tempDir, mathObj); merr != nil {
+			return merr
+		}
+		linkObjs = append(linkObjs, mathObj)
+		sw.Lap("cmmath")
+	}
+
+	linkObjs = append(linkObjs, cfg.ExtraObjs...)
+
+	if derr := ensureDir(filepath.Dir(cfg.Output)); derr != nil {
+		return fmt.Errorf("creating output directory: %v", derr)
+	}
+
+	if cfg.UseRTS {
+		if tp.GHC == "" {
+			return errors.New("-rts requested but no GHC binary is available")
+		}
+		if lerr := linkWithGHC(tp.GHC, linkObjs, cfg.Output, cfg.Libs, cfg); lerr != nil {
+			return toolFailure("linking with GHC failed", lerr)
+		}
+	} else {
+		if strings.TrimSpace(tp.CC) == "" {
+			return errors.New("no C compiler available for linking (set GMM_CC or install gcc/clang)")
+		}
+		if lerr := linkWithCC(tp.CC, linkObjs, cfg.Output, cfg.Libs, cfg); lerr != nil {
+			return toolFailure("linking failed", lerr)
+		}
+	}
+	sw.Lap("link")
+	return nil
+}
+
+// buildAndRun builds once, prints the timings and runs the result when asked.
+// It returns the exit code gmm (or the program it ran) should finish with.
+func buildAndRun(cfg Config, tp ToolPaths, tempDir, inputDir, baseName string) int {
+	sw := newStopwatch(cfg.Timings)
+	if err := buildOnce(cfg, tp, tempDir, inputDir, baseName, sw); err != nil {
+		if !errors.Is(err, errReported) {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		}
+		return 1
+	}
+	sw.Report()
+
+	if cfg.RunAfter && !cfg.EmitASM {
+		if cfg.IsShared() {
+			fmt.Fprintf(os.Stderr, "warning: %s is a shared object, not running it\n", cfg.Output)
+			return 0
+		}
+		return executeBinary(cfg.Output, cfg.RunArgs)
+	}
+	return 0
+}
+
+// ---------------------------------------------------------------------------
+// Project commands: clean, init, doctor, watch
+// ---------------------------------------------------------------------------
+
+// projectArtifacts lists every file a build of cfg may leave behind: the
+// objects next to the input and the output itself. `gmm clean` removes them.
+func projectArtifacts(cfg Config, inputDir, baseName string) []string {
+	files := []string{filepath.Join(inputDir, baseName+".o")}
+	if needsCMath(cfg.InputFile) {
+		files = append(files, mathObjPath(inputDir, baseName))
+	}
+	for _, cFile := range cfg.CFiles {
+		cleanPath := filepath.Clean(cFile)
+		files = append(files, filepath.Join(filepath.Dir(cleanPath), baseNameWithoutExt(cleanPath)+"_c.o"))
+	}
+	if cfg.EmitASM {
+		files = append(files, filepath.Join(inputDir, baseName+".s"))
+	}
+	if cfg.Output != "" {
+		files = append(files, cfg.Output)
+	}
+	return dedupeStrings(files)
+}
+
+func cleanProject(cfg Config, inputDir, baseName string) int {
+	// Sources and user supplied objects are never touched.
+	protected := map[string]bool{filepath.Clean(cfg.InputFile): true}
+	for _, p := range cfg.CFiles {
+		protected[filepath.Clean(p)] = true
+	}
+	for _, p := range cfg.ExtraObjs {
+		protected[filepath.Clean(p)] = true
+	}
+
+	removed := 0
+	for _, path := range projectArtifacts(cfg, inputDir, baseName) {
+		if protected[filepath.Clean(path)] || !fileExists(path) {
+			continue
+		}
+		if execMode.DryRun {
+			fmt.Println("[dry-run] remove", path)
+			removed++
+			continue
+		}
+		if err := os.Remove(path); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not remove %s: %v\n", path, err)
+			continue
+		}
+		fmt.Println("Removed", path)
+		removed++
+	}
+	if removed == 0 {
+		fmt.Println("Nothing to clean")
+	}
+	return 0
+}
+
+// renderConfFile turns the current configuration into conf.hmm text, using the
+// same keys parseHMMFile understands.
+func renderConfFile(cfg Config) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "# %s generated by gmm %s\n", confFileName, Version)
+
+	str := func(key, val string) {
+		if val != "" {
+			fmt.Fprintf(&b, "%s=%s\n", key, val)
+		}
+	}
+	list := func(key string, vals []string) {
+		if len(vals) > 0 {
+			fmt.Fprintf(&b, "%s=%s\n", key, strings.Join(vals, ","))
+		}
+	}
+	toggle := func(key string, on bool) {
+		if on {
+			fmt.Fprintf(&b, "%s=true\n", key)
+		}
+	}
+
+	str("input", cfg.InputFile)
+	if cfg.OutputSet {
+		str("output", cfg.Output)
+	}
+	str("target", cfg.TargetType)
+	str("opt", cfg.OptLevel)
+	list("libs", cfg.Libs)
+	list("includes", cfg.Includes)
+	list("defines", cfg.Defines)
+	list("cfiles", cfg.CFiles)
+	list("objs", cfg.ExtraObjs)
+	list("ghcopts", cfg.GHCOpts)
+	list("ldopts", cfg.LDOpts)
+	list("args", cfg.RunArgs)
+	toggle("keepobj", cfg.KeepObj)
+	toggle("emitasm", cfg.EmitASM)
+	toggle("llvm", cfg.UseLLVM)
+	toggle("rts", cfg.UseRTS)
+	toggle("strip", cfg.Strip)
+	toggle("run", cfg.RunAfter)
+	return b.String()
+}
+
+func initProject(cfg Config, force bool) int {
+	if fileExists(confFileName) && !force {
+		fmt.Fprintf(os.Stderr, "error: %s already exists (use -force to overwrite it)\n", confFileName)
+		return 1
+	}
+
+	content := renderConfFile(cfg)
+	if execMode.DryRun {
+		fmt.Print(content)
+		return 0
+	}
+	if err := os.WriteFile(confFileName, []byte(content), 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "error: writing %s: %v\n", confFileName, err)
+		return 1
+	}
+	fmt.Println("Wrote", confFileName)
+	return 0
+}
+
+// locateInstalledTools finds an already installed toolchain without touching
+// the network or the disk. The second value says where it was found.
+func locateInstalledTools() (ToolPaths, string) {
+	if ghc := strings.TrimSpace(os.Getenv("GMM_GHC")); ghc != "" {
+		tp := ToolPaths{
+			GHC:  ghc,
+			CC:   strings.TrimSpace(os.Getenv("GMM_CC")),
+			LLVM: strings.TrimSpace(os.Getenv("GMM_LLVM")),
+		}
+		if tp.CC == "" && isExecutableFile(ghc) {
+			tp.CC = guessCC(ghc)
+		}
+		if tp.LLVM == "" {
+			tp.LLVM = lookupInPath("opt", "opt.exe")
+		}
+		return tp, "the GMM_GHC environment variable"
+	}
+
+	for _, dir := range installDirCandidates() {
+		if tp, err := loadToolPathsFrom(dir); err == nil {
+			if tp.CC == "" && isExecutableFile(tp.GHC) {
+				tp.CC = guessCC(tp.GHC)
+			}
+			if tp.LLVM == "" {
+				tp.LLVM = lookupInPath("opt", "opt.exe")
+			}
+			return tp, sitFilePathIn(dir)
+		}
+		ghcDir := filepath.Join(dir, "Ghc")
+		if tp, ok := findToolsInDir(ghcDir); ok {
+			return tp, ghcDir
+		}
+	}
+	return ToolPaths{}, ""
+}
+
+// toolVersionLine runs `<tool> <arg>` and returns the most informative line of
+// its output, or "" when the tool cannot be started.
+func toolVersionLine(path, arg string) string {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	out, err := exec.CommandContext(ctx, path, arg).CombinedOutput()
+	if err != nil && len(out) == 0 {
+		return ""
+	}
+	first := ""
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		if first == "" {
+			first = line
+		}
+		if strings.Contains(strings.ToLower(line), "version") {
+			return line
+		}
+	}
+	return first
+}
+
+func runDoctor() int {
+	problems := 0
+
+	fmt.Printf("gmm %s (%s/%s)\n\n", Version, runtime.GOOS, runtime.GOARCH)
+
+	report := func(label, path, versionArg string, required bool) {
+		if path == "" {
+			if required {
+				fmt.Printf("  [FAIL] %-5s not found\n", label)
+				problems++
+			} else {
+				fmt.Printf("  [ -- ] %-5s not found (optional, only needed for -llvm)\n", label)
+			}
+			return
+		}
+		if !isExecutableFile(path) {
+			fmt.Printf("  [FAIL] %-5s %s (not an executable file)\n", label, path)
+			problems++
+			return
+		}
+		fmt.Printf("  [ OK ] %-5s %s\n", label, path)
+		if v := toolVersionLine(path, versionArg); v != "" {
+			fmt.Printf("                %s\n", v)
+		}
+	}
+
+	tp, source := locateInstalledTools()
+	if source == "" {
+		fmt.Println("Toolchain: not installed yet (gmm downloads GHC on the first build)")
+		if _, err := ghcDownloadURL(); err != nil {
+			fmt.Printf("  [FAIL] automatic download is unavailable: %v\n", err)
+			problems++
+		}
+	} else {
+		fmt.Printf("Toolchain (from %s):\n", source)
+		report("GHC", tp.GHC, "--numeric-version", true)
+		report("CC", tp.CC, "--version", true)
+		report("LLVM", tp.LLVM, "--version", false)
+	}
+
+	fmt.Println("\nEnvironment:")
+	for _, name := range []string{"GMM_HOME", "GMM_GHC", "GMM_CC", "GMM_LLVM"} {
+		val := strings.TrimSpace(os.Getenv(name))
+		if val == "" {
+			val = "(not set)"
+		}
+		fmt.Printf("  %-9s %s\n", name, val)
+	}
+	fmt.Println("  install dirs:", strings.Join(installDirCandidates(), ", "))
+
+	if runtime.GOOS != "windows" {
+		fmt.Println("\nLinkers:")
+		for _, name := range []string{"ld.gold", "ld.bfd", "ld.lld"} {
+			state := "missing"
+			if lookupInPath(name) != "" {
+				state = "found"
+			}
+			fmt.Printf("  %-8s %s\n", name, state)
+		}
+		if kind := defaultLinkerKind(); kind != "" {
+			fmt.Printf("  -rts links with -fuse-ld=%s (ld.gold is not available)\n", kind)
+		}
+	}
+
+	fmt.Println("\nTargets:")
+	for _, target := range []string{"native", "exe", "dll", "linux", "so"} {
+		state := "supported"
+		if checkTargetSupported(target) != nil {
+			state = "unavailable on " + runtime.GOOS + " (needs a " + targetPlatform(target) + " toolchain)"
+		}
+		fmt.Printf("  %-7s %s\n", target, state)
+	}
+
+	embedded := 0
+	_ = fs.WalkDir(libFS, "libgmm", func(path string, d fs.DirEntry, err error) error {
+		if err == nil && !d.IsDir() {
+			embedded++
+		}
+		return nil
+	})
+	fmt.Printf("\nEmbedded library files: %d\n", embedded)
+
+	if problems > 0 {
+		fmt.Printf("\n%d problem(s) found\n", problems)
+		return 1
+	}
+	fmt.Println("\nEverything looks fine")
+	return 0
+}
+
+var includeRe = regexp.MustCompile(`(?m)^\s*#\s*include\s+"([^"]+)"`)
+
+// collectIncludes follows the quoted #include lines of path and records every
+// header that exists on disk, so a watcher notices header edits too.
+func collectIncludes(path string, dirs []string, seen map[string]bool) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return
+	}
+	for _, m := range includeRe.FindAllStringSubmatch(string(data), -1) {
+		for _, dir := range append([]string{filepath.Dir(path)}, dirs...) {
+			candidate := filepath.Clean(filepath.Join(dir, m[1]))
+			if !fileExists(candidate) {
+				continue
+			}
+			if !seen[candidate] {
+				seen[candidate] = true
+				collectIncludes(candidate, dirs, seen)
+			}
+			break
+		}
+	}
+}
+
+// watchStamps fingerprints every file the build depends on (modification time
+// and size), so two calls differ exactly when something was edited.
+func watchStamps(cfg Config, confPath string) map[string]string {
+	files := map[string]bool{}
+	add := func(p string) {
+		if p != "" && fileExists(p) {
+			files[filepath.Clean(p)] = true
+		}
+	}
+	add(cfg.InputFile)
+	add(confPath)
+	for _, p := range cfg.CFiles {
+		add(p)
+	}
+	for _, p := range cfg.ExtraObjs {
+		add(p)
+	}
+	for _, src := range append([]string{cfg.InputFile}, cfg.CFiles...) {
+		collectIncludes(src, cfg.Includes, files)
+	}
+
+	stamps := make(map[string]string, len(files))
+	for path := range files {
+		if info, err := os.Stat(path); err == nil {
+			stamps[path] = fmt.Sprintf("%d/%d", info.ModTime().UnixNano(), info.Size())
+		}
+	}
+	return stamps
+}
+
+func sameStamps(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for path, stamp := range a {
+		if b[path] != stamp {
+			return false
+		}
+	}
+	return true
+}
+
+// watchProject rebuilds (and runs, with -r) every time a watched file changes
+// until Ctrl-C. A failed build is reported and the watcher keeps waiting.
+func watchProject(cfg Config, confPath string, tp ToolPaths, tempDir, inputDir, baseName string, interrupt <-chan os.Signal) int {
+	fmt.Printf("Watching %s (Ctrl-C to stop)\n", cfg.InputFile)
+
+	var last map[string]string
+	for {
+		current := watchStamps(cfg, confPath)
+		if last == nil || !sameStamps(last, current) {
+			if last != nil {
+				// Give editors a moment to finish writing the file.
+				time.Sleep(150 * time.Millisecond)
+				current = watchStamps(cfg, confPath)
+			}
+			last = current
+
+			fmt.Printf("\n[%s] building %s\n", time.Now().Format("15:04:05"), cfg.InputFile)
+			if code := buildAndRun(cfg, tp, tempDir, inputDir, baseName); code != 0 {
+				fmt.Fprintf(os.Stderr, "[%s] finished with exit status %d\n", time.Now().Format("15:04:05"), code)
+			}
+		}
+
+		select {
+		case <-interrupt:
+			fmt.Println("\nwatch stopped")
+			return 0
+		case <-time.After(500 * time.Millisecond):
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -1648,8 +2411,17 @@ func main() {
 		return
 	}
 
-	isBuildMode := flags.buildCmd || flags.buildClean || flags.buildRun
+	execMode.Verbose = flags.verbose
+	execMode.DryRun = flags.dryRun
+
+	if flags.doctor || (len(flags.positional) > 0 && strings.EqualFold(flags.positional[0], "doctor")) {
+		os.Exit(runDoctor())
+	}
+
+	isBuildMode := flags.buildCmd || flags.buildClean || flags.buildRun || flags.watch
 	isOnlyRunMode := flags.runCmd && !isBuildMode
+	isCleanMode := flags.clean
+	isInitMode := flags.initCmd
 
 	cfg := Config{
 		EmitASM:    flags.emitASM,
@@ -1659,6 +2431,13 @@ func main() {
 		CleanBuild: flags.buildClean,
 		RunAfter:   flags.buildRun || (flags.runCmd && isBuildMode),
 		Verbose:    flags.verbose,
+		Strip:      flags.strip,
+		Timings:    flags.timings,
+		Watch:      flags.watch,
+		OptLevel:   flags.optLevel,
+		GHCOpts:    append([]string{}, flags.ghcOpts...),
+		LDOpts:     append([]string{}, flags.ldOpts...),
+		RunArgs:    append([]string{}, flags.runArgs...),
 	}
 	cfg.Includes = append(cfg.Includes, flags.includes...)
 	cfg.Defines = append(cfg.Defines, flags.defines...)
@@ -1693,6 +2472,20 @@ func main() {
 			cfg.RunAfter = true
 			isBuildMode = true
 			args = args[1:]
+		case "watch", "w":
+			isBuildMode = true
+			cfg.Watch = true
+			if flags.runCmd {
+				cfg.RunAfter = true
+				isOnlyRunMode = false
+			}
+			args = args[1:]
+		case "clean":
+			isCleanMode = true
+			args = args[1:]
+		case "init":
+			isInitMode = true
+			args = args[1:]
 		}
 	}
 
@@ -1726,6 +2519,10 @@ func main() {
 	if confPath == "" {
 		confPath = findConfigFile("")
 	}
+	if isInitMode {
+		// init writes a fresh conf.hmm; the old one must not leak into it.
+		confPath = ""
+	}
 	if confPath != "" && cfg.Verbose {
 		fmt.Println("Using configuration file", confPath)
 	}
@@ -1745,7 +2542,7 @@ func main() {
 		if len(args) > 0 {
 			targetBin = args[0]
 		}
-		os.Exit(executeBinary(targetBin))
+		os.Exit(executeBinary(targetBin, cfg.RunArgs))
 	}
 
 	if len(args) > 0 {
@@ -1769,22 +2566,31 @@ func main() {
 		}
 	}
 
+	if isInitMode {
+		if cfg.InputFile == "" {
+			cfg.InputFile = "main.cmm"
+		}
+		os.Exit(initProject(cfg, flags.force))
+	}
+
 	if cfg.InputFile == "" {
-		if isBuildMode {
+		if isBuildMode || isCleanMode {
 			if confPath == "" {
 				fail("no %s found in the current directory and no input .cmm file given on the command line", confFileName)
 			}
 			fail("%s does not define an 'input' file", confPath)
 		}
-		printHelp()
+		fmt.Fprintln(os.Stderr, "error: no input file given")
+		fmt.Fprintln(os.Stderr, "usage: gmm [flags] <input.cmm>")
+		fmt.Fprintln(os.Stderr, "try 'gmm -h' for more information")
 		os.Exit(1)
 	}
 
-	if !fileExists(cfg.InputFile) {
+	if !isCleanMode && !fileExists(cfg.InputFile) {
 		fail("input file not found: %s", cfg.InputFile)
 	}
 	for _, obj := range cfg.ExtraObjs {
-		if !fileExists(obj) {
+		if !isCleanMode && !fileExists(obj) {
 			fail("extra object or library not found: %s", obj)
 		}
 	}
@@ -1792,7 +2598,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "warning: %s does not use the .cmm extension\n", cfg.InputFile)
 	}
 
-	if err := checkTargetSupported(cfg.TargetType); err != nil {
+	if err := checkTargetSupported(cfg.TargetType); err != nil && !isCleanMode {
 		fail("%v", err)
 	}
 
@@ -1819,6 +2625,10 @@ func main() {
 	cfg.Includes = dedupeStrings(cfg.Includes)
 	cfg.Defines = dedupeStrings(cfg.Defines)
 
+	if isCleanMode {
+		os.Exit(cleanProject(cfg, inputDir, baseName))
+	}
+
 	toolPaths, err := setupEnvironment()
 	if err != nil {
 		fail("%v", err)
@@ -1831,96 +2641,20 @@ func main() {
 	if err != nil {
 		fail("extracting embedded libs: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
 
-	var created []Artifact
+	// Ctrl-C must not kill gmm before the temporary directory is removed: the
+	// tools it started receive the signal too and stop on their own.
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
 
-	if cfg.EmitASM {
-		asmOutput := filepath.Join(inputDir, baseName+".s")
-		if cfg.OutputSet && cfg.Output != "" && cfg.Output != DefaultTargetOutput {
-			asmOutput = cfg.Output
-		}
-		trackArtifact(asmOutput, &created)
-		if err := compileToASM(toolPaths.GHC, cfg.InputFile, asmOutput, tempDir, cfg); err != nil {
-			cleanupArtifacts(created, false)
-			fmt.Fprintln(os.Stderr, "error: generating assembly failed")
-			os.Exit(1)
-		}
-		fmt.Printf("Assembly output saved to %s\n", asmOutput)
-		return
-	}
-
-	mainObjFile := filepath.Join(inputDir, baseName+".o")
-	trackArtifact(mainObjFile, &created)
-	if err := compileWithGHC(toolPaths.GHC, cfg.InputFile, mainObjFile, tempDir, cfg); err != nil {
-		cleanupArtifacts(created, false)
-		if cfg.UseLLVM {
-			fmt.Fprintln(os.Stderr, "error: compiling with the LLVM backend failed")
-			fmt.Fprintf(os.Stderr, "hint: GHC needs LLVM %s; install it or point GMM_LLVM at a working 'opt' binary\n", llvmVersionRange)
-		}
-		os.Exit(1)
-	}
-
-	compiledCObjs, err := compileCFiles(toolPaths.CC, cfg.CFiles, tempDir, cfg.Includes, cfg.Defines, cfg.IsShared(), &created)
-	if err != nil {
-		cleanupArtifacts(created, false)
-		fail("%v", err)
-	}
-
-	linkObjs := []string{mainObjFile}
-	linkObjs = append(linkObjs, compiledCObjs...)
-
-	if needsCMath(cfg.InputFile) {
-		// Avoid clobbering the C-- object when the input itself is named
-		// cmmath.cmm, which would otherwise produce duplicate symbol errors.
-		mathObjName := "cmmath.o"
-		if baseName == "cmmath" {
-			mathObjName = "cmmath_lib.o"
-		}
-		mathObj := filepath.Join(inputDir, mathObjName)
-		trackArtifact(mathObj, &created)
-		if err := compileMathLib(toolPaths.CC, tempDir, mathObj); err != nil {
-			cleanupArtifacts(created, false)
-			fail("%v", err)
-		}
-		linkObjs = append(linkObjs, mathObj)
-	}
-
-	linkObjs = append(linkObjs, cfg.ExtraObjs...)
-
-	outDir := filepath.Dir(cfg.Output)
-	if outDir != "." && outDir != "" {
-		if err := os.MkdirAll(outDir, 0755); err != nil {
-			cleanupArtifacts(created, false)
-			fail("creating output directory: %v", err)
-		}
-	}
-
-	if cfg.UseRTS {
-		if toolPaths.GHC == "" {
-			cleanupArtifacts(created, false)
-			fail("-rts requested but no GHC binary is available")
-		}
-		if err := linkWithGHC(toolPaths.GHC, linkObjs, cfg.Output, cfg.Libs, cfg); err != nil {
-			cleanupArtifacts(created, false)
-			fmt.Fprintln(os.Stderr, "error: linking with GHC failed")
-			os.Exit(1)
-		}
+	var code int
+	if cfg.Watch {
+		code = watchProject(cfg, confPath, toolPaths, tempDir, inputDir, baseName, interrupt)
 	} else {
-		if err := linkWithCC(toolPaths.CC, linkObjs, cfg.Output, cfg.Libs, cfg.TargetType); err != nil {
-			cleanupArtifacts(created, false)
-			fmt.Fprintln(os.Stderr, "error: linking failed")
-			os.Exit(1)
-		}
+		code = buildAndRun(cfg, toolPaths, tempDir, inputDir, baseName)
 	}
 
-	cleanupArtifacts(created, cfg.KeepObj)
-
-	if cfg.RunAfter {
-		if cfg.IsShared() {
-			fmt.Fprintf(os.Stderr, "warning: %s is a shared object, not running it\n", cfg.Output)
-			return
-		}
-		os.Exit(executeBinary(cfg.Output))
-	}
+	signal.Stop(interrupt)
+	os.RemoveAll(tempDir)
+	os.Exit(code)
 }
