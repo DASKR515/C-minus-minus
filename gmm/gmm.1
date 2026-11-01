@@ -1,0 +1,817 @@
+.TH GMM 1 "November 2026" "gmm 4.1" "User Commands"
+.SH NAME
+gmm \- GHC C\-\- Manager: build tool and compiler driver for C\-\- projects
+.SH SYNOPSIS
+.B gmm
+[\fIflags\fR] \fIinput.cmm\fR [\fIextra.o\fR|\fIlib.a\fR|\fIlib.so\fR ...]
+.br
+.B gmm
+[\fIflags\fR] {\fBbuild\fR | \fB\-b\fR}
+.br
+.B gmm
+[\fIflags\fR] {\fBbc\fR | \fB\-bc\fR}
+.br
+.B gmm
+[\fIflags\fR] {\fBrun\fR | \fB\-r\fR} [\fIexecutable\fR]
+.br
+.B gmm
+[\fIflags\fR] {\fBbr\fR | \fB\-br\fR}
+.br
+.B gmm
+[\fIflags\fR] {\fBwatch\fR | \fB\-w\fR}
+.br
+.B gmm
+[\fIflags\fR] {\fBclean\fR | \fB\-clean\fR}
+.br
+.B gmm
+[\fIflags\fR] {\fBinit\fR | \fB\-init\fR}
+.br
+.B gmm
+{\fBdoctor\fR | \fB\-doctor\fR}
+.br
+.B gmm
+{\fB\-h\fR | \fB\-v\fR}
+.SH DESCRIPTION
+.B gmm
+(GHC C\-\- Manager) compiles C\-\- source files (\fI.cmm\fR) with the C\-\- front end
+of the Glasgow Haskell Compiler and links the result into an executable or a
+shared library.
+It takes care of everything around the compiler call: it downloads and
+configures a GHC toolchain on first use, extracts the bundled C\-\- headers and
+support libraries, compiles any C sources that belong to the project, links
+with the system C compiler (or with GHC itself), cleans up intermediate files,
+and can run the resulting program or rebuild it whenever a source file changes.
+.PP
+A project can be described entirely on the command line, or in a small
+configuration file named
+.I conf.hmm
+(see
+.BR "CONFIGURATION FILE" ).
+Values given on the command line take precedence over values in
+.IR conf.hmm .
+.PP
+.B gmm
+is written in Go and ships as a single binary.
+The C\-\- support files it needs (the \fIlibgmm\fR directory) are embedded in the
+binary and extracted to a temporary directory for each run.
+.SH COMMANDS
+A command is the first non\-flag argument.
+Most commands also exist as a flag form (\fB\-b\fR, \fB\-r\fR, ...).
+.TP
+.BR build ", " b ", " \-b
+Build the project described by
+.I conf.hmm
+(or by the input file given on the command line).
+Fails if there is neither a configuration file nor an input file.
+.TP
+.BR bc ", " \-bc
+Build the project and remove only the object files that
+.B gmm
+created during this run.
+Files that existed before the run are never removed.
+In version 4.1 intermediate objects are already deleted after every build
+unless
+.B \-keep\-obj
+is given, so this command behaves like
+.BR build .
+.TP
+.BR run ", " r ", " \-r ", " \-run " [\fIexecutable\fR]"
+Without a build command: run an already built program and exit with its
+status.
+The program is the optional argument, otherwise the
+.B output
+from
+.IR conf.hmm ,
+otherwise
+.IR a.out .
+A bare file name without a directory part is run as
+.IR ./name .
+Combined with a build command (for example
+.BR "gmm \-b \-r" ),
+the program is started after a successful build.
+.TP
+.BR br ", " \-br
+Build using
+.I conf.hmm
+and run the program immediately on success.
+.TP
+.BR watch ", " w ", " \-w ", " \-watch
+Build, then rebuild every time the watched files change, until
+.B Ctrl\-C
+is pressed.
+Add
+.B \-r
+to run the program after every successful build.
+A failed build is reported and the watcher keeps waiting for the next change.
+See
+.BR "WATCH MODE" .
+.TP
+.BR clean ", " \-clean
+Remove the files
+.B gmm
+produces for this project: the object files, the output file, and the
+assembly file if assembly output is enabled.
+Source files, C sources and user supplied objects are never touched.
+With
+.B \-n
+it only prints what would be removed.
+.TP
+.BR init ", " \-init
+Write a new
+.I conf.hmm
+in the current directory from the current command line.
+The input defaults to
+.I main.cmm
+when none is given.
+An existing file is not overwritten unless
+.B \-f
+is given.
+With
+.B \-n
+the generated text is printed instead of written.
+.TP
+.BR doctor ", " \-doctor
+Check the toolchain and the environment and exit.
+See
+.BR DOCTOR .
+.SH OPTIONS
+.TP
+.BI \-o " file"
+Set the output file name, for example
+.BR "\-o app" .
+.TP
+.BI \-o " C=\(dq<target>\(dq"
+Select the output format (see
+.BR TARGETS ).
+Both forms can be combined and repeated:
+.BR "gmm \-o C=\(dqso\(dq \-o libapp main.cmm" .
+A bare
+.BI C= target
+argument is also accepted among the positional arguments.
+.TP
+.BI \-I " path"
+Add an include directory for C and C\-\- headers.
+May be repeated.
+.TP
+.BI \-D " name" [= value ]
+Define a macro for the C\-\- preprocessor.
+May be repeated.
+.TP
+.B \-S
+Emit assembly (\fI.s\fR) instead of building an executable or library.
+.TP
+.BI \-libs " list"
+Comma\-separated list of additional libraries to link.
+May be repeated.
+A plain name such as
+.B m
+becomes
+.BR \-lm ;
+an entry that starts with
+.BR \- ,
+contains a path separator, or ends in
+.IR .so ,
+.IR .a ,
+.I .dll
+or
+.I .lib
+is passed to the linker unchanged.
+.TP
+.B \-keep\-obj
+Keep intermediate object files after linking.
+.TP
+.B \-llvm
+Compile with the GHC LLVM backend (\fB\-fllvm\fR).
+Needs an LLVM
+.B opt
+tool in the version range accepted by GHC 9.12 (LLVM 13 to 20).
+.TP
+.B \-rts
+Use GHC as the linker driver (with \fB\-no\-hs\-main\fR) instead of the system
+C compiler.
+.TP
+.BI \-opt " 0|1|2"
+Optimisation level handed to GHC (\fB\-O0\fR, \fB\-O1\fR, \fB\-O2\fR).
+The forms
+.BR 2 ,
+.B O2
+and
+.B \-O2
+are equivalent.
+.TP
+.BI \-ghc\-opt " flags"
+Extra flags passed straight to GHC, comma\-separated.
+May be repeated.
+.TP
+.BI \-ld\-opt " flags"
+Extra flags passed to the linker command, comma\-separated.
+May be repeated.
+See
+.B NOTES
+about flags that contain a comma.
+.TP
+.B \-strip
+Strip symbols from the linked output.
+.TP
+.BI \-arg " value"
+Argument given to the program started by
+.B \-r
+or
+.BR \-br .
+May be repeated.
+.TP
+.BR \-w ", " \-watch
+Rebuild when the project changes.
+.TP
+.B \-clean
+Same as the
+.B clean
+command.
+.TP
+.B \-init
+Same as the
+.B init
+command.
+.TP
+.BR \-f ", " \-force
+Let
+.B init
+overwrite an existing
+.IR conf.hmm .
+.TP
+.BR \-n ", " \-dry\-run
+Print the commands that would run without running anything.
+A dry run never downloads the toolchain; if GHC is not installed it stops with
+an error that asks for one normal run first.
+.TP
+.B \-time
+Print how long each build phase took (compile, C files, link, ...).
+.TP
+.B \-verbose
+Echo every external command before it runs.
+.TP
+.B \-doctor
+Check the toolchain and environment, then exit.
+.TP
+.BR \-v ", " \-version
+Print the version, developer and repository, then exit.
+.TP
+.BR \-h ", " \-help
+Print the built\-in help text and exit.
+.SH TARGETS
+The target is chosen with
+.B \-o C=\(dq<target>\(dq
+or with the
+.B target
+key of
+.IR conf.hmm .
+Each name matches the file that is produced.
+.TP
+.B native
+Plain executable for the current host. This is the default.
+The output is named
+.I a.out
+unless a name is given (\fI.exe\fR is appended on Windows).
+Alias:
+.BR host .
+.TP
+.B exe
+Windows PE executable; the output gets the
+.I .exe
+suffix.
+Aliases:
+.BR windows ,
+.BR pe .
+.TP
+.B dll
+Windows PE shared library; the output gets the
+.I .dll
+suffix.
+.TP
+.B linux
+Linux ELF executable; the output gets the
+.I .elf
+suffix when the name has no extension.
+Alias:
+.BR elf .
+.TP
+.B so
+Native shared object; the output gets the
+.I .so
+suffix (a name that already ends in
+.I .so
+or
+.I .dylib
+is kept).
+Alias:
+.BR shared .
+.PP
+When no output name is given for
+.BR exe ,
+.BR dll ,
+.B linux
+or
+.BR so ,
+the base name of the input file is used with the matching suffix.
+For example
+.B gmm \-o C=\(dqso\(dq main.cmm
+writes
+.IR main.so ,
+and
+.B gmm \-o C=\(dqso\(dq \-o app main.cmm
+writes
+.IR app.so .
+.PP
+.B gmm
+does not cross\-compile.
+A target that belongs to another operating system than the host (for example
+.B exe
+or
+.B dll
+on Linux, or
+.B linux
+on Windows) is refused with an error.
+Use
+.B native
+for a plain executable for the host.
+Shared objects and DLLs are not run by
+.B \-r
+(a warning is printed instead).
+.SH CONFIGURATION FILE
+.B gmm
+reads
+.I conf.hmm
+from the directory of the input file, then from the current directory; the
+first one found is used.
+The format is one
+.I key=value
+per line.
+Blank lines and lines that start with
+.B #
+or
+.B ;
+are ignored.
+Values may be quoted.
+Keys are case\-insensitive and unknown keys are ignored, so newer files stay
+loadable by older versions.
+A line without
+.B =
+is an error that names the file and line number.
+.PP
+Lists are comma\-separated.
+Booleans accept
+.BR 1 / true / yes / on
+and
+.BR 0 / false / no / off .
+A boolean key can only switch an option on; an option already enabled on the
+command line is never switched off by
+.BR false .
+.TP
+.BR input " (" src ", " source )
+The C\-\- source file.
+.TP
+.BR output " (" out ", " bin )
+Output name. A command line
+.B \-o
+wins.
+.TP
+.BR target " (" type ", " format )
+One of
+.BR native ,
+.BR exe ,
+.BR dll ,
+.BR linux ,
+.BR so .
+The suffix implied by the target is added to the output name.
+.TP
+.BR includes " (" incdirs )
+Include directories.
+.TP
+.BR defines " (" defs )
+Macros, as
+.B NAME
+or
+.BR NAME=value .
+.TP
+.BR cfiles " (" csources ", " csrc )
+C source files compiled with the C compiler and linked in.
+Each
+.I x.c
+becomes
+.IR x_c.o .
+.TP
+.BR libs " (" libraries )
+Libraries to link, same rules as
+.BR \-libs .
+.TP
+.BR objs " (" objects ", " extraobjs )
+Extra object files or archives to link.
+.TP
+.BR keepobj " (" keep\-obj )
+Keep intermediate objects.
+.TP
+.BR emitasm " (" asm )
+Emit assembly instead of building.
+.TP
+.B llvm
+Use the LLVM backend.
+.TP
+.B rts
+Link with GHC instead of the C compiler.
+.TP
+.B run
+Run the program after building.
+.TP
+.BR opt " (" optimize )
+Optimisation level: 0, 1 or 2.
+.TP
+.B strip
+Strip symbols.
+.TP
+.BR args " (" runargs )
+Arguments for the program started by run. Arguments given with
+.B \-arg
+win.
+.TP
+.BR ghcopts " (" ghc\-opts )
+Extra GHC flags.
+.TP
+.BR ldopts " (" ld\-opts )
+Extra linker flags.
+.PP
+Include directories, macros and libraries from the command line are placed
+before the ones from
+.IR conf.hmm .
+The
+.B init
+command writes a file with exactly these keys from the current command line.
+.PP
+Example:
+.PP
+.nf
+.RS
+# conf.hmm generated by gmm 4.1
+input=main.cmm
+output=app
+target=linux
+opt=2
+libs=m,pthread
+includes=include
+defines=DEBUG,VERSION=3
+cfiles=helpers.c
+args=--verbose,input.txt
+.RE
+.fi
+.SH POSITIONAL FILE ARGUMENTS
+Besides the input file, extra positional arguments are classified by suffix:
+.IR .so ,
+.IR .a ,
+.I .dll
+and
+.I .lib
+files are linked as libraries; everything else is treated as an extra object
+file.
+The input is the first argument that ends in
+.IR .cmm ;
+if none does, the first argument is used and a warning about the missing
+.I .cmm
+extension is printed.
+.SH BUILD PROCESS
+A normal build performs these steps, in order:
+.IP 1. 4
+Locate or install the toolchain (see
+.BR TOOLCHAIN ).
+.IP 2. 4
+Extract the embedded
+.I libgmm
+files to a temporary directory.
+That directory is added to the include path, so the bundled headers can be
+used with
+.BR #include .
+It is removed when
+.B gmm
+exits.
+.IP 3. 4
+Compile the C\-\- file with GHC:
+.B \-c \-no\-hs\-main
+plus
+.B \-fllvm
+(with
+.BR \-llvm ),
+.B \-O\fIn\fR
+(with
+.BR \-opt ),
+.B \-fPIC
+(for
+.B so
+and
+.BR dll ),
+include directories, macros (passed as
+.BR "\-optc \-D..." ),
+and any
+.BR \-ghc\-opt
+flags.
+The object is written next to the input as
+.IR name.o .
+.IP 4. 4
+Compile each C file from
+.B cfiles
+with the C compiler (with
+.B \-fPIC
+for shared libraries).
+.IP 5. 4
+If the C\-\- source mentions
+.I cmmath.h
+or
+.IR cmmath.c ,
+build the bundled math support object
+.I cmmath.o
+(\fIcmmath_lib.o\fR when the input itself is named
+.IR cmmath.cmm )
+and link it in.
+.IP 6. 4
+Link with the C compiler:
+.B \-shared \-fPIC
+for
+.B so
+and
+.BR dll ,
+.B \-no\-pie
+for executables,
+.BR \-g ,
+the requested libraries,
+.B \-lm \-lc
+on non\-Windows systems,
+.B \-s
+with
+.BR \-strip ,
+and finally any
+.B \-ld\-opt
+flags.
+With
+.B \-rts
+the link is done by GHC instead.
+.IP 7. 4
+Delete the intermediate object files, unless
+.B \-keep\-obj
+was given.
+A failed build never leaves half\-written objects behind.
+.PP
+With
+.B \-S
+only the assembly step is done and the result is written to
+.I name.s
+(or to the file given with
+.BR \-o ).
+.SH WATCH MODE
+Watch mode fingerprints the input file, the quoted
+.B #include
+files that exist on disk (followed recursively), the C sources,
+.IR conf.hmm ,
+and rebuilds when any modification time or size changes.
+It polls every half second and waits a moment after a change so editors can
+finish writing.
+.B Ctrl\-C
+stops the watcher and exits with status 0.
+.SH TOOLCHAIN
+.B gmm
+needs a GHC and a C compiler.
+They are located in this order:
+.IP 1. 4
+.B GMM_GHC
+in the environment (with
+.B GMM_CC
+and
+.B GMM_LLVM
+if set).
+If it does not point to an executable file, gmm stops with an error instead of
+falling back to another toolchain.
+.IP 2. 4
+A
+.I sit.txt
+file in an installation directory, with the lines
+.BR GHC= ,
+.B CC=
+and
+.BR LLVM= .
+.IP 3. 4
+A
+.I Ghc/
+directory inside an installation directory, which is searched for a GHC
+binary and a C compiler (clang, gcc or cc next to GHC, then the system ones).
+A
+.I sit.txt
+is written when one is found.
+.IP 4. 4
+Otherwise the toolchain is downloaded and unpacked.
+.PP
+The installation directories are
+.B GMM_HOME
+if set; otherwise on Linux and macOS
+.I /usr/local/bin/gmm
+and then
+.IR ~/.local/share/gmm ;
+on Windows
+.IR "%ProgramFiles(x86)%\\\\gmm" .
+The first writable one is used for a new installation.
+.PP
+The automatic download fetches GHC 9.12.4 for the host platform (Windows
+x86_64, Linux x86_64, Linux aarch64, macOS arm64) from
+.IR downloads.haskell.org ,
+showing a progress bar, and unpacks it into
+.IR Ghc/ .
+No download is published for Windows arm64 or macOS x86_64; on those systems
+install GHC yourself and set
+.BR GMM_GHC .
+.SH DOCTOR
+.B gmm doctor
+prints a report and exits with status 1 if a required tool is missing:
+.IP \(bu 3
+the gmm version and the host platform;
+.IP \(bu 3
+the GHC, C compiler and (optional) LLVM tools, with their paths, versions and
+an OK or FAIL marker, or a note that the toolchain will be downloaded on the
+first build;
+.IP \(bu 3
+the environment variables and installation directories;
+.IP \(bu 3
+the linkers available (\fBld.gold\fR, \fBld.bfd\fR, \fBld.lld\fR) on non\-Windows systems;
+.IP \(bu 3
+which targets are supported on this host;
+.IP \(bu 3
+the number of embedded library files.
+.SH ENVIRONMENT
+.TP
+.B GMM_HOME
+Installation directory that holds
+.I Ghc/
+and
+.IR sit.txt .
+Overrides the default installation directories.
+.TP
+.B GMM_GHC
+Path to a
+.B ghc
+binary. Skips the toolchain lookup.
+.TP
+.B GMM_CC
+Path to the C compiler driver used for assembling and linking.
+.TP
+.B GMM_LLVM
+Path to the LLVM
+.B opt
+tool, used with
+.BR \-llvm .
+If unset,
+.B opt
+is looked up in
+.BR PATH .
+.SH FILES
+.TP
+.I conf.hmm
+Project configuration.
+.TP
+.I sit.txt
+Remembered toolchain paths, inside the installation directory.
+.TP
+.I Ghc/
+The downloaded GHC toolchain, inside the installation directory.
+.TP
+.I name.o, name_c.o, cmmath.o
+Intermediate objects, written next to the sources and removed after linking.
+.TP
+.I a.out, name.exe, name.elf, name.so, name.dll
+Default output names.
+.SH EXIT STATUS
+.TP
+.B 0
+Success. (In watch mode, also after
+.BR Ctrl\-C .)
+.TP
+.B 1
+Build, link or configuration error, a failed
+.B doctor
+check, or
+.B init
+refusing to overwrite.
+.TP
+.B 2
+Invalid command line.
+.TP
+.B 127
+.B run
+could not find the program to execute.
+.PP
+When
+.B gmm
+runs the program with
+.BR \-r ,
+it returns that program's own exit status.
+.B Ctrl\-C
+during a run is delivered to the program, not to
+.BR gmm .
+.SH EXAMPLES
+Build an executable for this host:
+.PP
+.RS
+.B gmm \-o app main.cmm
+.RE
+.PP
+Build and run with an argument:
+.PP
+.RS
+.B gmm \-r \-arg hello main.cmm
+.RE
+.PP
+Optimised Linux ELF executable with the math library, stripped:
+.PP
+.RS
+.B gmm \-o C=\(dqlinux\(dq \-o app \-opt 2 \-libs m \-strip main.cmm
+.RE
+.PP
+Shared object linked with a C helper file and an extra archive:
+.PP
+.RS
+.B gmm \-o C=\(dqso\(dq \-o libapp main.cmm helper.o libextra.a
+.RE
+.PP
+Generate a project file, then build and run from it:
+.PP
+.RS
+.nf
+\fBgmm \-init \-o app \-opt 2 \-libs m main.cmm\fR
+\fBgmm \-br\fR
+.fi
+.RE
+.PP
+Rebuild and rerun on every change:
+.PP
+.RS
+.B gmm \-w \-r
+.RE
+.PP
+Show the commands and timings without hiding anything:
+.PP
+.RS
+.B gmm \-verbose \-time main.cmm
+.RE
+.PP
+See what a build would do, without doing it:
+.PP
+.RS
+.B gmm \-n main.cmm
+.RE
+.PP
+Remove everything the project produced:
+.PP
+.RS
+.B gmm clean
+.RE
+.SH NOTES
+.SS Flags that contain a comma
+The list options
+.BR \-ghc\-opt ,
+.BR \-ld\-opt
+and
+.B \-libs
+split their value at commas, and there is no escape for a comma.
+A flag such as
+.B \-Wl,\-Bsymbolic
+therefore reaches the C compiler as two broken pieces.
+Pass linker flags with
+.B \-Xlinker
+instead, one option per use:
+.PP
+.RS
+.B gmm \-ld\-opt=\-Xlinker \-ld\-opt=\-Bsymbolic \-o C=\(dqso\(dq \-o app main.cmm
+.RE
+.SS Shared objects and position independent code
+The native code generator of GHC may emit position\-dependent references to
+symbols defined in the same C\-\- file (for example a string label), which the
+linker rejects when building a shared object:
+.PP
+.RS
+relocation R_X86_64_PC32 against symbol \(oqfmt\(cq can not be used when making a shared object
+.RE
+.PP
+Two ways around it: build with the LLVM backend
+.RB ( "\-llvm" ),
+or let the linker bind such symbols locally with
+.BR "\-ld\-opt=\-Xlinker \-ld\-opt=\-Bsymbolic" .
+The latter means functions in the library cannot be overridden by another
+library loaded earlier.
+.SS Cross compilation
+Targets for another operating system are rejected.
+A Windows\-hosted GHC cannot be run on Linux directly; a Windows executable
+from Linux needs a Windows\-targeting GHC (set
+.BR GMM_GHC )
+and a way to run it, such as Wine.
+.SH AUTHOR
+Written by DASKR.
+.SH REPORTING BUGS
+https://github.com/DASKR515/C\-minus\-minus
+.SH SEE ALSO
+.BR ghc (1),
+.BR gcc (1),
+.BR ld (1),
+.BR opt (1)
