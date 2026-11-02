@@ -11,14 +11,14 @@ Each example requires:
 - The `gmm` tool (or the manual alternative command below).
 
 ```bash
-gmm -o app 01_hello_print.cmm
+gmm -o app hello_print.cmm
 ./app
 ```
 
 Or manually without `gmm`:
 
 ```bash
-ghc -c -no-hs-main 01_hello_print.cmm -o app.o
+ghc -c -no-hs-main hello_print.cmm -o app.o
 cc app.o -o app -lm -lc
 ./app
 ```
