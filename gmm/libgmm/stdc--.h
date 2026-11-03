@@ -30,8 +30,8 @@
 
 #pragma once
 #include "Cmm.h"
-#include "ret.h"
-
+//void like C Nothing. ex= void main(void){ mexit(0); }
+#define void  
 #define ffi           foreign "C" 
 #define C_ W_
 
