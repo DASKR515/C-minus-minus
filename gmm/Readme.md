@@ -1,4 +1,4 @@
-# gmm (GHC C-- Manager) v4.1
+# gmm (GHC C-- Manager) v4.2
 
 > **First run (Linux, macOS, Windows):** if no toolchain is found, `gmm` downloads the official GHC 9.12.4 bindist by itself and unpacks it into its installation directory. No manual steps, no Chocolatey. Point it at your own GHC with `GMM_GHC` if you prefer.
 > **Linux/macOS:** a C compiler (`gcc` or `clang`) must be installed, because the final link is done by the system toolchain (or set `GMM_CC`).
@@ -117,9 +117,9 @@ Because `cc` has no notion of the Haskell RTS, it links only what the object fil
 
 | Format | File | Install |
 | --- | --- | --- |
-| Debian / Ubuntu | `gmm_<ver>_<arch>.deb` | `sudo dpkg -i gmm_4.1_amd64.deb` |
-| Fedora / RHEL / openSUSE | `gmm-<ver>-1.<arch>.rpm` | `sudo rpm -i gmm-4.1-1.x86_64.rpm` |
-| Alpine | `gmm_<ver>_<arch>.apk` | `sudo apk add --allow-untrusted gmm_4.1_x86_64.apk` |
+| Debian / Ubuntu | `gmm_<ver>_<arch>.deb` | `sudo dpkg -i gmm_4.2_amd64.deb` |
+| Fedora / RHEL / openSUSE | `gmm-<ver>-1.<arch>.rpm` | `sudo rpm -i gmm-4.2-1.x86_64.rpm` |
+| Alpine | `gmm_<ver>_<arch>.apk` | `sudo apk add --allow-untrusted gmm_4.2_x86_64.apk` |
 | Any Linux | `gmm-<ver>-linux-<arch>.tar.xz` | unpack, copy `gmm` to `/usr/bin`, `gmm.1` to `/usr/share/man/man1` |
 | Windows | `gmm.exe` | put it anywhere in `PATH` |
 
@@ -507,7 +507,7 @@ printf '1\n2 1 1 2\n1\n2\n1 2 1\n' | ./dijkstra
 
 ## gmm vs. plain ghc
 
-| Feature | Plain `ghc` | `gmm 4.1` |
+| Feature | Plain `ghc` | `gmm 4.2` |
 | --- | --- | --- |
 | Standalone Cmm compilation | ✅ | ✅ |
 | RTS-free native binaries | ❌ | ✅ |
