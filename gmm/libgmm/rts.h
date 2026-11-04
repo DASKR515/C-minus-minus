@@ -1,7 +1,7 @@
 /*
  *  rts.h  --  GHC RTS / STG wrapper for Cmm   (companion of stdc--.h)
  *  target : GHC 9.12.4        build : gmm -opt 2 -rts main.cmm -o app
- *
+ *  by ALEXIS ( 0.1.0-beta )
  *  TAGS
  *    [V]  the NAME exists in libHSrts-1.0.3.a (checked with nm on the real GHC 9.12.4
  *         install), or the function linked and ran on your machine.
