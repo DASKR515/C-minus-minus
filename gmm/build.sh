@@ -15,12 +15,14 @@
 #   gmm-<ver>-1.<arch>.rpm               Fedora / RHEL / openSUSE
 #   gmm_<ver>_<arch>.apk                 Alpine Linux
 #
-# Packages install the binary as /usr/bin/gmm and the man page as
-# /usr/share/man/man1/gmm.1.gz. (Not /usr/local/bin/gmm: gmm itself uses that
-# path as a directory for its downloaded GHC toolchain.)
-#
-# deb, rpm and apk are made with nfpm. If it is missing, the script installs it
-# with "go install". Set GMM_LICENSE=<name> to put a license in the packages.
+# The .apk is signed (Alpine refuses unsigned packages). The first run creates an
+# RSA key pair in ./keys/ (keep gmm.rsa private, do NOT commit it; build/ is wiped
+# on every run, so the key lives outside it). The public key is copied to
+# build/gmm.rsa.pub: install it once with
+#   sudo cp gmm.rsa.pub /etc/apk/keys/
+# Use your own key with GMM_APK_KEY=/path/key.rsa and GMM_APK_KEY_NAME=<name>
+# (the public key is then /etc/apk/keys/<name>.rsa.pub). Encrypted keys: set
+# NFPM_APK_PASSPHRASE. Needs openssl; without it the apk is built unsigned.
 
 set -euo pipefail
 
@@ -32,6 +34,9 @@ MAN=gmm.1
 OUT=build
 STAGE="$OUT/.stage"
 LINUX_ARCHES="amd64 arm64"
+APK_KEY="${GMM_APK_KEY:-keys/gmm.rsa}"
+APK_KEY_NAME="${GMM_APK_KEY_NAME:-gmm}"
+APK_SIGNED=0
 HOMEPAGE="https://github.com/DASKR515/C-minus-minus"
 MAINTAINER="DASKR"
 DESCRIPTION="GHC C-- Manager: build tool and compiler driver for C-- projects"
@@ -127,8 +132,42 @@ find_nfpm() {
     return 1
 }
 
+setup_apk_key() {
+    if ! command -v openssl >/dev/null 2>&1; then
+        warn "openssl not found: the .apk will be unsigned (apk add --allow-untrusted)"
+        return 0
+    fi
+    if [ ! -f "$APK_KEY" ]; then
+        log "creating apk signing key: $APK_KEY"
+        mkdir -p "$(dirname "$APK_KEY")"
+        openssl genrsa -traditional -out "$APK_KEY" 4096 2>/dev/null \
+            || openssl genrsa -out "$APK_KEY" 4096 2>/dev/null \
+            || { warn "could not create $APK_KEY: the .apk will be unsigned"; rm -f "$APK_KEY"; return 0; }
+        chmod 600 "$APK_KEY"
+        warn "keep $APK_KEY private and out of git"
+    fi
+    local pass=()
+    if [ -n "${NFPM_APK_PASSPHRASE:-}" ]; then
+        pass=(-passin env:NFPM_APK_PASSPHRASE)
+    fi
+    if openssl rsa -in "$APK_KEY" "${pass[@]}" -pubout -out "$OUT/$APK_KEY_NAME.rsa.pub" 2>/dev/null; then
+        APK_KEY_ABS="$(cd "$(dirname "$APK_KEY")" && pwd)/$(basename "$APK_KEY")"
+        APK_SIGNED=1
+        log "Alpine signing key successfully configured."
+    else
+        warn "could not read $APK_KEY: the .apk will be unsigned"
+        rm -f "$OUT/$APK_KEY_NAME.rsa.pub"
+    fi
+}
+
 make_pkg() { # arch format
-    local arch="$1" fmt="$2" cfg="$STAGE/nfpm-$1.yaml" license=""
+    local arch="$1" fmt="$2" cfg="$STAGE/nfpm-$1.yaml" license="" apksig=""
+    if [ "$APK_SIGNED" = 1 ] && [ "$fmt" = "apk" ]; then
+        apksig="apk:
+  signature:
+    key_file: \"$APK_KEY_ABS\"
+    key_name: \"$APK_KEY_NAME\""
+    fi
     if [ -n "${GMM_LICENSE:-}" ]; then
         license="license: \"${GMM_LICENSE}\""
     fi
@@ -152,19 +191,21 @@ contents:
     dst: /usr/share/man/man1/$MAN.gz
     file_info:
       mode: 0644
+$apksig
 overrides:
   deb:
     recommends: [gcc]
   rpm:
     recommends: [gcc]
   apk:
-    depends: [gcc, musl-dev]
+    depends: [gcc, musl-dev, binutils, ncurses-libs, gmp, libffi]
 EOF
     "$NFPM" package --config "$cfg" --packager "$fmt" --target "$OUT/" >/dev/null
 }
 
 SKIPPED=""
 if find_nfpm; then
+    setup_apk_key
     for arch in $LINUX_ARCHES; do
         for fmt in deb rpm apk; do
             log "packing $fmt ($arch)"
@@ -192,5 +233,11 @@ echo
 echo "install examples:"
 echo "  sudo dpkg -i $OUT/${NAME}_${VERSION}_amd64.deb"
 echo "  sudo rpm -i $OUT/${NAME}-${VERSION}-1.x86_64.rpm"
-echo "  sudo apk add --allow-untrusted $OUT/${NAME}_${VERSION}_x86_64.apk"
+if [ "$APK_SIGNED" = 1 ]; then
+    echo "  sudo cp $OUT/$APK_KEY_NAME.rsa.pub /etc/apk/keys/   # once"
+    echo "  sudo apk add $OUT/${NAME}_${VERSION}_x86_64.apk"
+else
+    echo "  sudo apk add --allow-untrusted $OUT/${NAME}_${VERSION}_x86_64.apk"
+fi
 echo "  tar -xJf $OUT/${NAME}-${VERSION}-linux-amd64.tar.xz   # then copy gmm to /usr/bin, gmm.1 to /usr/share/man/man1"
+[ -z "$SKIPPED" ] || exit 1
