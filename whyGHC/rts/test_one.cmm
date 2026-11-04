@@ -1,0 +1,71 @@
+#include "Cmm.h"
+#include "stdc--.h"
+import "C" isDoubleNaN;
+import "C" isDoubleInfinite;
+import "C" isDoubleFinite;
+import "C" isDoubleDenormalized;
+import "C" isDoubleNegativeZero;
+import "C" __decodeDouble_Int64;
+
+section "data" { fmt_hdr: bits8[] "== %lld: sign=%lld exp=%lld frac=%lld hi32=%lld lo32=%lld\n\0"; }
+section "data" { fmt_cls: bits8[] "   nan=%lld inf=%lld fin=%lld denorm=%lld negzero=%lld\n\0"; }
+section "data" { fmt_dec: bits8[] "   decode: mant=%lld exp=%lld\n\0"; }
+
+section "data" { val0: bits64 0x400d99999999999a; }  // 3.7
+section "data" { val1: bits64 0x7ff0000000000000; }  // +inf
+section "data" { val2: bits64 0x7ff8000000000000; }  // NaN
+section "data" { val3: bits64 0x8000000000000000; }  // -0.0
+section "data" { val4: bits64 0x0000000000000001; }  // denormal
+
+export main;
+
+main() {
+    bits64  idx, raw, buf;
+    bits64  sign, ex, frac, hi, lo;
+    bits64  nan, inf, fin, den, nz;
+    float64 d;
+    idx = 0; raw = 0; buf = 0;
+    sign = 0; ex = 0; frac = 0; hi = 0; lo = 0;
+    nan = 0; inf = 0; fin = 0; den = 0; nz = 0;
+
+    (buf) = mnew(64);
+
+    loop:
+    if (idx >= 5) goto done;
+
+        if (idx == 0) { raw = bits64[val0]; } else {
+        if (idx == 1) { raw = bits64[val1]; } else {
+        if (idx == 2) { raw = bits64[val2]; } else {
+        if (idx == 3) { raw = bits64[val3]; } else {
+            raw = bits64[val4];
+        }}}}
+
+        
+        bits64[buf] = raw;
+        d = float64[buf];
+
+        sign = (raw >> 63) & 1;
+        ex   = (raw >> 52) & 0x7FF;
+        frac = raw & 0xFFFFFFFFFFFFF;
+        hi   = (raw >> 32) & 0xFFFFFFFF;
+        lo   = raw & 0xFFFFFFFF;
+
+        moutf(fmt_hdr "ptr", idx, sign, ex, frac, hi, lo);
+
+        (nan) = ffi isDoubleNaN(d);
+        (inf) = ffi isDoubleInfinite(d);
+        (fin) = ffi isDoubleFinite(d);
+        (den) = ffi isDoubleDenormalized(d);
+        (nz)  = ffi isDoubleNegativeZero(d);
+        moutf(fmt_cls "ptr", nan, inf, fin, den, nz);
+        ffi __decodeDouble_Int64(buf + 8 "ptr", buf + 16 "ptr", d);
+        moutf(fmt_dec "ptr", bits64[buf + 8], bits64[buf + 16]);
+
+        idx = idx + 1;
+        goto loop;
+
+    done:
+    mflush(0);
+    mfree(buf);
+    mexit(0);
+}
