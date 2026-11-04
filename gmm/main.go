@@ -29,7 +29,7 @@ var libFS embed.FS
 const (
 	Author     = "DASKR"
 	Repository = "https://github.com/DASKR515/C-minus-minus"
-	Version    = "4.1"
+	Version    = "4.2"
 
 	ghcWinURL   = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-unknown-mingw32-int_native.tar.xz"
 	ghcLinuxURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-deb11-linux.tar.xz"
@@ -37,6 +37,15 @@ const (
 	// is the only aarch64 Linux tarball for this release.
 	ghcLinuxARMURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-aarch64-alpine3_18-linux.tar.xz"
 	ghcDarwinURL   = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-aarch64-apple-darwin.tar.xz"
+
+	// Distribution specific bindists, picked by linuxGHCURL().
+	ghcDarwinAMDURL   = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-apple-darwin.tar.xz"
+	ghcLinuxAlpineURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-alpine3_12-linux.tar.xz"
+	ghcLinuxDebURL    = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-deb12-linux.tar.xz"
+	ghcLinuxRockyURL  = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-rocky8-linux.tar.xz"
+	ghcLinuxFedoraURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-fedora38-linux.tar.xz"
+	ghcLinuxUbuntuURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-ubuntu20_04-linux.tar.xz"
+	ghcLinuxARMDebURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-aarch64-deb10-linux.tar.xz"
 
 	// llvmVersionRange is what GHC 9.12 accepts for the LLVM backend.
 	llvmVersionRange = "13-20"
@@ -95,7 +104,11 @@ type ProgressWriter struct {
 	LastPrinted time.Time
 	Label       string
 	printed     bool
+	frame       int
 }
+
+// spinnerFrames animates the symbol in front of the progress line.
+var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
 func (pw *ProgressWriter) Write(p []byte) (int, error) {
 	n := len(p)
@@ -103,6 +116,8 @@ func (pw *ProgressWriter) Write(p []byte) (int, error) {
 
 	if time.Since(pw.LastPrinted) > 100*time.Millisecond || (pw.Total > 0 && pw.Downloaded >= pw.Total) {
 		pw.LastPrinted = time.Now()
+		spin := spinnerFrames[pw.frame%len(spinnerFrames)]
+		pw.frame++
 		mbDownloaded := float64(pw.Downloaded) / (1024 * 1024)
 
 		if pw.Total > 0 {
@@ -121,9 +136,9 @@ func (pw *ProgressWriter) Write(p []byte) (int, error) {
 			}
 			bar := strings.Repeat("█", completed) + strings.Repeat("░", barLen-completed)
 
-			fmt.Printf("\r 🚀 %s [%s] %.1f%% (%.2f / %.2f MB)", pw.Label, bar, percent, mbDownloaded, mbTotal)
+			fmt.Printf("\r %s %s [%s] %.1f%% (%.2f / %.2f MB)", spin, pw.Label, bar, percent, mbDownloaded, mbTotal)
 		} else {
-			fmt.Printf("\r 🚀 %s (%.2f MB downloaded)", pw.Label, mbDownloaded)
+			fmt.Printf("\r %s %s (%.2f MB downloaded)", spin, pw.Label, mbDownloaded)
 		}
 		pw.printed = true
 	}
@@ -137,10 +152,10 @@ func (pw *ProgressWriter) Finish() {
 	}
 	pw.printed = false
 	if pw.Total > 0 {
-		fmt.Printf("\r 🚀 %s [%.2f MB] done\n", pw.Label, float64(pw.Total)/(1024*1024))
+		fmt.Printf("\r ◆ %s [%.2f MB] done\n", pw.Label, float64(pw.Total)/(1024*1024))
 		return
 	}
-	fmt.Printf("\r 🚀 %s (%.2f MB) done\n", pw.Label, float64(pw.Downloaded)/(1024*1024))
+	fmt.Printf("\r ◆ %s (%.2f MB) done\n", pw.Label, float64(pw.Downloaded)/(1024*1024))
 }
 
 // execMode is set once from the command line and consulted by every helper
@@ -615,6 +630,14 @@ func setupEnvironment() (ToolPaths, error) {
 		return tp, nil
 	}
 
+	// A GHC installed by the system package manager always comes first.
+	if tp, ok := systemGHCToolPaths(); ok {
+		if execMode.Verbose {
+			fmt.Println("Using system GHC", tp.GHC)
+		}
+		return tp, nil
+	}
+
 	candidates := installDirCandidates()
 
 	for _, dir := range candidates {
@@ -687,12 +710,12 @@ func setupEnvironment() (ToolPaths, error) {
 		fmt.Println("Found existing archive, skipping download...")
 	}
 
-	fmt.Println("\n📦 Extracting GHC toolchain (this may take a minute)...")
+	fmt.Println("\n◇ Extracting GHC toolchain (this may take a minute)...")
 	if err := extractTarXz(tarPath, ghcExtractDir); err != nil {
 		os.Remove(tarPath)
 		return ToolPaths{}, fmt.Errorf("extraction error: %w", err)
 	}
-	fmt.Println("\n✅ Extraction complete.")
+	fmt.Println("\n◈ Extraction complete.")
 	os.Remove(tarPath)
 
 	extractedTp, ok := findToolsInDir(ghcExtractDir)
@@ -725,14 +748,129 @@ func ghcDownloadURL() (string, error) {
 		if runtime.GOARCH == "arm64" {
 			return ghcDarwinURL, nil
 		}
-		return "", errors.New("no GHC bindist is published for darwin/amd64; " +
+		if runtime.GOARCH == "amd64" {
+			return ghcDarwinAMDURL, nil
+		}
+		return "", errors.New("no GHC bindist is published for darwin/" + runtime.GOARCH + "; " +
 			"install GHC yourself and point GMM_GHC at it")
 	default:
-		if runtime.GOARCH == "arm64" {
-			return ghcLinuxARMURL, nil
-		}
-		return ghcLinuxURL, nil
+		return linuxGHCURL(), nil
 	}
+}
+
+// readOSRelease parses /etc/os-release (or /usr/lib/os-release) into a map.
+func readOSRelease() map[string]string {
+	data, err := os.ReadFile("/etc/os-release")
+	if err != nil {
+		data, err = os.ReadFile("/usr/lib/os-release")
+		if err != nil {
+			return nil
+		}
+	}
+	out := map[string]string{}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		out[strings.ToUpper(strings.TrimSpace(parts[0]))] = trimQuotes(parts[1])
+	}
+	return out
+}
+
+// detectLinuxFamily maps the running distribution (ID / ID_LIKE) to the family
+// of the GHC bindist built for it: alpine, ubuntu, debian, rhel or fedora.
+// An empty result means the distribution is unknown.
+func detectLinuxFamily() string {
+	osr := readOSRelease()
+	ids := strings.Fields(strings.ToLower(osr["ID"] + " " + osr["ID_LIKE"]))
+	has := func(names ...string) bool {
+		for _, id := range ids {
+			for _, n := range names {
+				if id == n {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	switch {
+	case has("alpine"):
+		return "alpine"
+	case has("ubuntu"):
+		return "ubuntu"
+	case has("debian"):
+		return "debian"
+	// RHEL clones list "fedora" in ID_LIKE, so rhel must be tested first.
+	case has("rhel", "centos", "rocky", "almalinux"):
+		return "rhel"
+	case has("fedora"):
+		return "fedora"
+	}
+	return ""
+}
+
+// linuxGHCURL picks the GHC bindist that matches this Linux distribution.
+func linuxGHCURL() string {
+	family := detectLinuxFamily()
+
+	if runtime.GOARCH == "arm64" {
+		switch family {
+		case "debian", "ubuntu", "rhel", "fedora":
+			return ghcLinuxARMDebURL
+		}
+		return ghcLinuxARMURL
+	}
+
+	switch family {
+	case "alpine":
+		return ghcLinuxAlpineURL
+	case "ubuntu":
+		return ghcLinuxUbuntuURL
+	case "debian":
+		return ghcLinuxDebURL
+	case "rhel":
+		return ghcLinuxRockyURL
+	case "fedora":
+		return ghcLinuxFedoraURL
+	}
+	return ghcLinuxURL
+}
+
+// systemGHCToolPaths returns a GHC that is already installed on the system
+// (found in PATH, e.g. from apt/dnf/apk/pacman). A GHC that lives inside gmm's
+// own installation directory is ignored so the bundled toolchain keeps working
+// the way it did before.
+func systemGHCToolPaths() (ToolPaths, bool) {
+	if runtime.GOOS != "linux" {
+		return ToolPaths{}, false
+	}
+	ghc := lookupInPath("ghc")
+	if ghc == "" || !isExecutableFile(ghc) {
+		return ToolPaths{}, false
+	}
+	resolved := ghc
+	if r, err := filepath.EvalSymlinks(ghc); err == nil {
+		resolved = r
+	}
+	for _, dir := range installDirCandidates() {
+		prefix := filepath.Clean(dir) + string(os.PathSeparator)
+		if strings.HasPrefix(resolved, prefix) || strings.HasPrefix(ghc, prefix) {
+			return ToolPaths{}, false
+		}
+	}
+	if toolVersionLine(ghc, "--numeric-version") == "" {
+		return ToolPaths{}, false
+	}
+	return ToolPaths{
+		GHC:  ghc,
+		CC:   guessCC(ghc),
+		LLVM: lookupInPath("opt", "opt.exe"),
+	}, true
 }
 
 func downloadFile(url string, filepathStr string) error {
@@ -2152,6 +2290,11 @@ func locateInstalledTools() (ToolPaths, string) {
 			tp.LLVM = lookupInPath("opt", "opt.exe")
 		}
 		return tp, "the GMM_GHC environment variable"
+	}
+
+	// Same order as setupEnvironment: a system GHC wins over the bundled one.
+	if tp, ok := systemGHCToolPaths(); ok {
+		return tp, "the system package manager (PATH)"
 	}
 
 	for _, dir := range installDirCandidates() {
