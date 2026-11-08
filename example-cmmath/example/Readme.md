@@ -2,7 +2,7 @@
 
 # cmmath.h
 
-##[wiki and doc math all](https://github.com/DASKR515/C-minus-minus/blob/main/example/ReadmeMath.md)
+##[wiki and doc math all](https://github.com/DASKR515/C-minus-minus/blob/main/example-cmmath/example/ReadmeMath.md)
 
 **A floating-point math library for C-- (Cmm) built around the NCG-Isolation Architecture.**
 
