@@ -1,8 +1,8 @@
 /*
               --    by JABIR aka <DASKR>
               --    Qlua.c - C implementation for Qlua bindings
-              --    Lua 5.4.6 integration layer
-              --    ver <1.0.0>
+              --    Lua 5.4.8 integration layer
+              --    ver <1.0.1>
 */
 
 #include <stdint.h>
