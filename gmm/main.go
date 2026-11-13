@@ -29,7 +29,7 @@ var libFS embed.FS
 const (
 	Author     = "DASKR"
 	Repository = "https://github.com/DASKR515/C-minus-minus"
-	Version    = "4.2"
+	Version    = "4.3"
 
 	ghcWinURL   = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-unknown-mingw32-int_native.tar.xz"
 	ghcLinuxURL = "https://downloads.haskell.org/~ghc/9.12.4/ghc-9.12.4-x86_64-deb11-linux.tar.xz"
@@ -630,10 +630,11 @@ func setupEnvironment() (ToolPaths, error) {
 		return tp, nil
 	}
 
-	// A GHC installed by the system package manager always comes first.
+	// A GHC that is already installed on the system (found in PATH) always
+	// comes first: nothing is downloaded when the machine already has one.
 	if tp, ok := systemGHCToolPaths(); ok {
 		if execMode.Verbose {
-			fmt.Println("Using system GHC", tp.GHC)
+			fmt.Printf("Using system GHC %s (version %s)\n", tp.GHC, toolVersionLine(tp.GHC, "--numeric-version"))
 		}
 		return tp, nil
 	}
@@ -841,15 +842,44 @@ func linuxGHCURL() string {
 	return ghcLinuxURL
 }
 
+// hasPathPrefix reports whether path lies inside dir. Windows paths are
+// compared case-insensitively.
+func hasPathPrefix(path, dir string) bool {
+	prefix := filepath.Clean(dir) + string(os.PathSeparator)
+	if runtime.GOOS == "windows" {
+		return strings.HasPrefix(strings.ToLower(path), strings.ToLower(prefix))
+	}
+	return strings.HasPrefix(path, prefix)
+}
+
+// ghcInfoCC asks GHC which C compiler it was configured with (`ghc --info`).
+// It is used when no compiler can be found next to GHC or in PATH.
+func ghcInfoCC(ghc string) string {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	out, err := exec.CommandContext(ctx, ghc, "--info").Output()
+	if err != nil {
+		return ""
+	}
+	m := regexp.MustCompile(`\("C compiler command",\s*"([^"]+)"\)`).FindSubmatch(out)
+	if m == nil {
+		return ""
+	}
+	cc := string(m[1])
+	if isExecutableFile(cc) {
+		return cc
+	}
+	return lookupInPath(cc)
+}
+
 // systemGHCToolPaths returns a GHC that is already installed on the system
-// (found in PATH, e.g. from apt/dnf/apk/pacman). A GHC that lives inside gmm's
-// own installation directory is ignored so the bundled toolchain keeps working
+// (found in PATH: apt/dnf/apk/pacman on Linux, Homebrew/ghcup on macOS,
+// ghcup/Chocolatey/Stack on Windows). A GHC that lives inside gmm's own
+// installation directory is ignored so the bundled toolchain keeps working
 // the way it did before.
 func systemGHCToolPaths() (ToolPaths, bool) {
-	if runtime.GOOS != "linux" {
-		return ToolPaths{}, false
-	}
-	ghc := lookupInPath("ghc")
+	ghc := lookupInPath("ghc", "ghc.exe")
 	if ghc == "" || !isExecutableFile(ghc) {
 		return ToolPaths{}, false
 	}
@@ -858,17 +888,20 @@ func systemGHCToolPaths() (ToolPaths, bool) {
 		resolved = r
 	}
 	for _, dir := range installDirCandidates() {
-		prefix := filepath.Clean(dir) + string(os.PathSeparator)
-		if strings.HasPrefix(resolved, prefix) || strings.HasPrefix(ghc, prefix) {
+		if hasPathPrefix(resolved, dir) || hasPathPrefix(ghc, dir) {
 			return ToolPaths{}, false
 		}
 	}
 	if toolVersionLine(ghc, "--numeric-version") == "" {
 		return ToolPaths{}, false
 	}
+	cc := guessCC(ghc)
+	if cc == "" {
+		cc = ghcInfoCC(ghc)
+	}
 	return ToolPaths{
 		GHC:  ghc,
-		CC:   guessCC(ghc),
+		CC:   cc,
 		LLVM: lookupInPath("opt", "opt.exe"),
 	}, true
 }
