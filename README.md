@@ -264,7 +264,7 @@ cc main.o -o app -no-pie -lm -lc
 | Toolchain setup | manual | downloaded automatically on first run |
 | Project file | none | `conf.hmm` |
 
-### What gmm 4.1 can do
+### What gmm can do
 
 | | |
 |---|---|
