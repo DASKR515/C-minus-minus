@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-BSD--2--Clause-blue?style=for-the-badge)](#-license)
 [![Language](https://img.shields.io/badge/language-C--%20(Cmm)-5e5086?style=for-the-badge)](#-what-is-cmm)
 [![Compiler](https://img.shields.io/badge/compiler-GHC-orange?style=for-the-badge)](https://www.haskell.org/ghc/)
-[![gmm](https://img.shields.io/badge/gmm-v4.1-success?style=for-the-badge)](https://github.com/DASKR515/C-minus-minus/releases)
+[![gmm](https://img.shields.io/badge/gmm-v4.3-success?style=for-the-badge)](https://github.com/DASKR515/C-minus-minus/releases)
 [![Status](https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge)](#-project-status)
 
 [📚 Examples](https://github.com/DASKR515/C-minus-minus/tree/main/example) ·
